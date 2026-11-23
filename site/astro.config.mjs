@@ -1,10 +1,16 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
+import fumadocs from '@fumadocs/astro';
 
 export default defineConfig({
   site: 'https://fwrds.space.fast',
   output: 'static',
-  integrations: [sitemap()],
+  trailingSlash: 'always',
+  integrations: [fumadocs({ components: './src/components/mdx.tsx' }), sitemap()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
   fonts: [
     {
       name: 'Clash Display',
@@ -32,15 +38,6 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['ui-monospace', 'monospace'],
-    },
-    {
-      name: 'Rock Salt',
-      cssVariable: '--font-hand',
-      provider: fontProviders.google(),
-      weights: [400],
-      styles: ['normal'],
-      subsets: ['latin'],
-      fallbacks: ['cursive'],
     },
   ],
 });

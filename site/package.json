@@ -16,15 +16,27 @@
     "lint:types": "astro check"
   },
   "dependencies": {
+    "@astrojs/react": "^7.1.9",
     "@astrojs/sitemap": "^3.7.6",
-    "astro": "^7.4.13"
+    "@base-ui/react": "^1.9.0",
+    "@fumadocs/astro": "^0.3.0",
+    "astro": "^7.4.13",
+    "fumadocs-core": "^16.19.7",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@^16.19.7",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/mdx": "^2.0.14",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@typescript-eslint/parser": "^8.57.2",
     "eslint": "^10.1.0",
     "eslint-plugin-astro": "^1.6.0",
+    "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3"
   }
 }

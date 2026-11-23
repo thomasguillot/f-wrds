@@ -1,0 +1,31 @@
+---
+title: Troubleshooting
+description: Fix snippets that do not expand, text that appears twice, apps that ignore a paste, and shell variables that fail.
+---
+
+Start with the menu bar menu. When something is wrong, a line at the top says what.
+
+## Nothing expands
+
+- Open the menu bar menu and read the line at the top. It can say **Expansion paused**, **Needs permission from macOS**, or that F Wrds can't watch the keyboard. In the last case, quit F Wrds and open it again.
+- If permissions are missing, choose **Help → Run Setup Again…**. An update or a different build can reset them. See [Getting started](/docs/).
+- Check that **Expand snippets** is on and that **Pause in** followed by the app name is off.
+- Check that the group and the snippet are both enabled, and that the group's app filter includes the app you are in. See [Groups and app filters](/docs/groups/).
+- Check that the snippet has a trigger. A snippet with no trigger never expands.
+- Nothing expands in a password field or any other field where macOS has turned on secure input. F Wrds can't see what you type there, so this is expected.
+
+## Text appears twice
+
+Espanso is probably still running. Quit it.
+
+## An app ignores the paste
+
+Switch that app to typing. Add it under **Exceptions by app** in **Settings → Insertion** and set it to **Typed**. See [Insertion](/docs/insertion/).
+
+## A shell variable shows ⚠︎
+
+The command failed or took longer than its **Timeout**. Try the command in Terminal, and raise the timeout if it is slow. See [Variables](/docs/variables/).
+
+## Permissions disappeared
+
+macOS ties each permission to the app's code signature. A build you made from source, with a different signature, counts as a different app, so the old permissions do not carry over. F Wrds reopens setup at the permissions step. Turn both on again. Your snippets and settings are not affected.

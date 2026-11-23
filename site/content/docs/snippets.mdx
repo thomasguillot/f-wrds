@@ -1,0 +1,50 @@
+---
+title: Snippets and triggers
+description: Create snippets, set one or more triggers, use regex triggers, and control how case and word boundaries are handled.
+---
+
+A snippet is a trigger and the text it expands into. Snippets live in groups. See [Groups and app filters](/docs/groups/).
+
+## Add a snippet
+
+1. Select a group in the sidebar.
+2. Click **Add Snippet**.
+3. Write what you want inserted in **Content**.
+4. Optionally give it a **Label**. The label names the snippet in lists and in snippet search.
+
+## Triggers
+
+With **Text** selected under the trigger type, type a trigger such as `;sig` in **Add trigger** and click **Add**.
+
+We suggest starting triggers with a semicolon. A leading `;` keeps a trigger from firing inside normal words. F Wrds does not require it.
+
+A snippet can have several triggers, and any of them expands it. Click the cross on a trigger to remove it. A snippet with no trigger never expands, and F Wrds warns you about it. A trigger can be up to 64 characters long. A longer one is refused with a message, and so is a trigger the snippet already has.
+
+## Regex triggers
+
+Choose **Regex** to match a pattern instead of fixed text. Names captured by the pattern can be used in the content.
+
+For example, with this pattern:
+
+```text
+:hi(?<name>\w+)
+```
+
+typing `:hiAnna` expands the snippet, and `{{name}}` in the content becomes `Anna`.
+
+A snippet uses either Text triggers or a Regex, not both. Switch back to **Text** and your triggers are still there. An invalid pattern shows an error and the snippet won't expand until it is fixed.
+
+## Options
+
+- **Only expand after a space or punctuation**: the trigger only expands when it follows a space or a punctuation mark, so `sig` doesn't expand inside "design".
+- **Match the case I type**: type the trigger with a capital letter and the expansion follows. Type it in capitals and the expansion is in capitals.
+- **Capital letters**: how a capitalized trigger changes the text. Choose None, First letter, Each word or All capitals. Use it with **Match the case I type**.
+- **Enabled**: turn a snippet off without deleting it.
+
+## Undo an expansion
+
+Press `⌫` as the very next key after an expansion and F Wrds puts back the trigger you typed. To turn this off, go to **Settings → Expansion** and clear **Press ⌫ right after an expansion to undo it**.
+
+## Pin a snippet
+
+To keep a snippet one click away in the menu bar, see [Snippet search and the menu bar](/docs/search-and-menu-bar/).
