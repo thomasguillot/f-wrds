@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import '../styles/global.css';
+---
+
+<Base
+  title="Page not found · F Wrds"
+  description="This page doesn't exist, or it moved."
+  skipTarget="main"
+  noindex
+>
+  <main id="main">
+    <div class="wrap">
+      <header class="hero">
+        <h1><span class="l">#@!%.</span> Nothing here.</h1>
+        <p class="sub">This page doesn't exist, or it moved.</p>
+        <div class="cta"><a class="btn" href="/">Go home</a><a href="/docs/">Read the docs</a></div>
+      </header>
+    </div>
+  </main>
+</Base>

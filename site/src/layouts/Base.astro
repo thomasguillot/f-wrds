@@ -10,9 +10,10 @@ interface Props {
   ogType?: 'website' | 'article';
   htmlClass?: string;
   skipTarget: string;
+  noindex?: boolean;
 }
 
-const { title, description, ogType = 'website', htmlClass, skipTarget } = Astro.props;
+const { title, description, ogType = 'website', htmlClass, skipTarget, noindex } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -23,6 +24,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#0E0705" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.png" type="image/png" />
