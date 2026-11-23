@@ -41,8 +41,14 @@
   }
 
   #fd-glass-layout > div.sticky {
-    padding-inline-end: 0;
+    padding-top: 13px;
+    padding-inline: 0;
     background-image: none;
+  }
+
+  #fd-glass-layout > div.sticky > button {
+    width: var(--nav-h);
+    height: var(--nav-h);
   }
 }
 
