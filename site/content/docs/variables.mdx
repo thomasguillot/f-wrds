@@ -1,0 +1,44 @@
+---
+title: Variables
+description: Put dates, clipboard text, shell output, questions and global values into a snippet.
+---
+
+A variable is a placeholder that is filled in each time the snippet expands. Click **Insert Variable** above the content and pick a type. The variable appears in the content as a chip. Click a chip to set it up and to change its name.
+
+## Variable types
+
+- **Date**: today's date, or a date before or after it, in the format you choose. Set the **Format** and an **Offset** in seconds, minutes, hours or days. Common codes are `%Y` (year), `%m` (month), `%d` (day), `%H:%M:%S` (time), `%A` (weekday name) and `%B` (month name). `%Y-%m-%d` gives `2026-11-23`.
+- **Clipboard**: whatever you have copied. If the clipboard is empty, nothing is inserted.
+- **Choice**: one option picked at random from a list. Use **Add Option** to add more.
+- **Fixed text**: text that stays the same, handy for reusing a phrase. Other variables inside it are filled in too.
+- **Shell**: runs a command and inserts what it prints. Set a **Timeout** in seconds. The command runs each time the snippet expands, not while you edit.
+- **Ask me**: asks you questions when the snippet expands, then inserts your answers.
+- **Global…**: a global variable you defined once. See below.
+
+If a shell command fails or runs past its timeout, `⚠︎` is inserted in its place.
+
+## Ask me
+
+Click **Add Question** for each question. A question has a **Name**, the **Question** text and a **Type**: **Text**, **Multiline** or **Choice**. Text and Multiline can have a **Default**. In the content, use `{{variable.field}}` for each answer, where `variable` is the variable's name and `field` is the question's name.
+
+When the snippet expands, a small panel asks the questions. Press `↩` to submit from a text field. In a multiline field `↩` adds a new line, so press `⌘↩` instead; it submits from anywhere in the panel. Press `esc` to cancel and leave the trigger text in place.
+
+## Raw tokens and preview
+
+In the content, a variable shows as a chip. Behind it is text such as `{{date}}`, using the variable's name. Turn on **Show raw tokens** to see that text instead.
+
+**Preview** shows what the snippet will expand to. Shell commands do not run in the preview, and the clipboard is not read.
+
+A variable that is no longer in the content waits under **Not used in the content**. You can put it back or remove it there.
+
+## Cursor position
+
+Put `$|$` in the content to place the cursor there after the snippet expands. The preview shows where the cursor ends up.
+
+## Global variables
+
+Save a value once, such as your name or an email signature, and use it in any snippet. Change it and every snippet that uses it updates.
+
+Select **Global Variables** at the top of the sidebar and click **Add Variable**. Then use **Insert Variable → Global…** in a snippet. That item stays off until at least one global variable exists.
+
+A global variable can't point to another global variable.

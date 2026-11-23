@@ -1,0 +1,51 @@
+---
+title: Backup and moving from Espanso
+description: Import Espanso match files, export back to Espanso, and back up or restore everything in F Wrds.
+---
+
+Everything on this page is in **Settings → Backup and Espanso**. The Espanso items are also in the File menu.
+
+## Import from Espanso
+
+Quit Espanso first. Then click **Import from Espanso…** and choose your Espanso folder, or one or more `.yml` files.
+
+F Wrds shows a preview before anything is added.
+
+- Each file becomes one group, named after the file, with its snippet count.
+- Where a group name is already in your library (ignoring case), a new name such as `Work (imported)` is suggested. Nothing is merged into or overwritten. You can edit any name before you import.
+- If an incoming file uses shell commands, a warning lists them so you can read them first.
+
+Click **Import** to add the groups. A report then lists what could not be mapped. F Wrds keeps those Espanso keys on the snippet and writes them back when you export. Global variables with the same name as one you already have are skipped, and your existing value is used.
+
+## Espanso to F Wrds
+
+| Espanso | F Wrds |
+| --- | --- |
+| A match file (`.yml` or `.yaml`) | A group, named after the file |
+| `trigger` or `triggers` | Text triggers |
+| `regex` | A regex trigger. If a match has both, the regex wins and the trigger is kept |
+| `replace` | Content |
+| `label` | Label |
+| `word` | **Only expand after a space or punctuation** |
+| `propagate_case` | **Match the case I type** |
+| `uppercase_style` (`capitalize`, `capitalize_words`, `uppercase`) | **Capital letters**: First letter, Each word, All capitals |
+| `vars` of type `date` (`format`, `offset`) | **Date** |
+| `vars` of type `clipboard` | **Clipboard** |
+| `vars` of type `choice` or `random` (`values`) | **Choice** |
+| `vars` of type `echo` | **Fixed text** |
+| `vars` of type `shell` (`cmd`) | **Shell**, with a 10 second **Timeout** |
+| `vars` of type `form`, or the `form` and `form_fields` shorthand | **Ask me** |
+| `global_vars` | Global Variables |
+| Any other key | Kept on the snippet and written back on export |
+
+Files whose names start with an underscore are skipped and listed in the report. Top-level keys other than `matches` and `global_vars` are dropped and named in the report.
+
+## Export to Espanso
+
+**Export to Espanso…** writes your snippets as Espanso files, one per group. You pick the folder and click **Export Here**. It is not a backup: app filters and on/off switches are left out, and so are shell timeouts. To export one group, right-click it in the sidebar and choose **Export…**.
+
+## Back up and restore
+
+**Export Backup…** saves every group, snippet, global variable and setting to one file. It is the only export that puts you back exactly where you left off. Use it to move to a new Mac or to go back later.
+
+**Restore Backup…** replaces everything currently in F Wrds with what is in the file. This cannot be undone. F Wrds asks you to confirm first.

@@ -1,0 +1,53 @@
+---
+title: Getting started
+description: Install F Wrds, grant the two macOS permissions it needs and expand your first snippet in any app.
+---
+
+F Wrds replaces short triggers with longer text as you type. Type a trigger in any app and it expands on the spot. For example, `;sig` can become your full email signature. It lives in the menu bar, and you open its window from there to add and edit snippets.
+
+F Wrds needs macOS 26 (Tahoe) or later and an Apple Silicon Mac.
+
+## Install
+
+F Wrds is not signed with an Apple Developer ID or notarized, so macOS blocks it the first time you open it. To allow it:
+
+1. Double-click **F Wrds**. When macOS warns that it can't verify the developer, click **Done**, not **Move to Trash**.
+2. Open **System Settings → Privacy & Security** and scroll to the **Security** section.
+3. Click **Open Anyway** next to the message that "F Wrds" was blocked to protect your Mac. Authenticate, then click **Open**.
+
+macOS only asks once. After that the app opens normally.
+
+## Quit Espanso first
+
+If Espanso is still running, both apps react to the same trigger and the text appears twice. Quit Espanso before you use F Wrds. To bring your snippets across, see [Backup and moving from Espanso](/docs/backup-and-espanso).
+
+## First launch
+
+On first launch, F Wrds opens a short setup with three steps.
+
+1. **Welcome to F Wrds** explains what the app does and why it needs two permissions. Click **Continue**, or **Set Up Later** to skip.
+2. **Turn on two permissions** shows live status for each one. The setup moves on by itself once both are on.
+3. **Try It** gives you a text field. If you have a snippet with the trigger `;fwrds`, type it there and watch it expand. Click **Done** to open the F Wrds window.
+
+## The two permissions
+
+macOS asks you to allow two things. Neither is used for anything else.
+
+- **Accessibility** lets F Wrds type the full text into the app you are using.
+- **Input Monitoring** lets F Wrds see what you type, so it can notice a trigger.
+
+F Wrds can't expand anything until both are on. If something is missing, choose **Help → Run Setup Again…**.
+
+## Updates and permissions
+
+macOS ties each permission to the app's code signature. Release builds are signed with the same certificate every time, so both permissions carry over when F Wrds updates itself. A build with a different signature, such as one you build from source, counts as a different app. F Wrds notices this and reopens setup at the permissions step so you can confirm both again. Your snippets and settings are not affected.
+
+## Where your data lives
+
+Your snippets and settings are stored in `~/Library/Application Support/FWrds/`.
+
+## Next steps
+
+- [Snippets and triggers](/docs/snippets)
+- [Variables](/docs/variables)
+- [Groups and app filters](/docs/groups)

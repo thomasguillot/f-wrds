@@ -1,10 +1,15 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
+import fumadocs from '@fumadocs/astro';
 
 export default defineConfig({
   site: 'https://fwrds.space.fast',
   output: 'static',
-  integrations: [sitemap()],
+  integrations: [fumadocs({ components: './src/components/mdx.tsx' }), sitemap()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
   fonts: [
     {
       name: 'Clash Display',

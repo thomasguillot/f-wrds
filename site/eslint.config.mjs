@@ -9,9 +9,10 @@ export default [
   js.configs.recommended,
   ...astro.configs.recommended,
   {
-    files: ['**/*.{js,mjs,ts}'],
+    files: ['**/*.{js,mjs,ts,tsx}'],
     languageOptions: {
       parser: tsParser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
       globals: {
         window: 'readonly',
         document: 'readonly',

@@ -1,0 +1,16 @@
+---
+import { Image } from 'astro:assets';
+import icon from '../assets/icon.png';
+
+const onDocs = Astro.url.pathname.startsWith('/docs');
+---
+
+<div class="wrap">
+  <nav class="site-nav" aria-label="Main">
+    <a class="logo" href="/"><Image src={icon} alt="" width={84} height={84} />F Wrds</a>
+    <div class="site-nav-r">
+      <a class="site-nav-link" href="/docs/" aria-current={onDocs ? 'page' : undefined}>Docs</a>
+      <a class="btn sm" data-download href="https://github.com/thomasguillot/f-wrds/releases/latest"><span>Download<span class="wide"> for Mac</span></span></a>
+    </div>
+  </nav>
+</div>

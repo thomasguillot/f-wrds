@@ -153,6 +153,8 @@ cd site && npm install && npm run dev
 npm run build
 ```
 
+The user docs are MDX files in `site/content/docs/`, rendered with Fumadocs at `/docs` in the same build. The sidebar order is set in `site/content/docs/meta.json`.
+
 ## License
 
 MIT

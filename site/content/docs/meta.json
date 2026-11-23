@@ -1,0 +1,17 @@
+{
+  "title": "Docs",
+  "pages": [
+    "---Start here---",
+    "index",
+    "---Snippets---",
+    "snippets",
+    "variables",
+    "groups",
+    "---Everyday use---",
+    "search-and-menu-bar",
+    "insertion",
+    "---Help---",
+    "backup-and-espanso",
+    "troubleshooting"
+  ]
+}
