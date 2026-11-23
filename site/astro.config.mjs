@@ -33,14 +33,5 @@ export default defineConfig({
       subsets: ['latin'],
       fallbacks: ['ui-monospace', 'monospace'],
     },
-    {
-      name: 'Rock Salt',
-      cssVariable: '--font-hand',
-      provider: fontProviders.google(),
-      weights: [400],
-      styles: ['normal'],
-      subsets: ['latin'],
-      fallbacks: ['cursive'],
-    },
   ],
 });
