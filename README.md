@@ -1,12 +1,16 @@
+<img src="site/public/favicon.png" alt="" width="96" height="96">
+
 # F Wrds
 
 *#@!% typing the same $#!% twice.*
 
-A native macOS menu-bar text expander — Espanso-style triggers, plus a real management UI.
+A native macOS menu-bar text expander with Espanso-style triggers and a real app
+to manage your snippets.
 
-**→ [Download from GitHub Releases](https://github.com/thomasguillot/f-wrds/releases)**
+**→ [Download page](https://fwrds.space.fast/)**: always points at the latest
+release.
 
-**Requires macOS 26 (Tahoe) or later. Not notarized: no Apple Developer Program needed.**
+**Requires macOS 26 (Tahoe) or later, Apple Silicon. Not notarized: no Apple Developer Program needed.**
 
 ---
 
