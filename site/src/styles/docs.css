@@ -34,6 +34,17 @@
 @media (min-width: 768px) {
   #nd-page {
     padding-top: 17px;
+    padding-bottom: 0;
+  }
+
+  #nd-sidebar {
+    top: 28px;
+    height: calc(100dvh - 56px);
+    margin-bottom: 0;
+  }
+
+  #fd-glass-layout {
+    margin-bottom: 48px;
   }
 
   #nd-page h1 {
