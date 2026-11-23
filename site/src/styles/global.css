@@ -3,8 +3,8 @@ body{font-weight:500;font-size:18px;line-height:1.55}
 :where(:focus-visible:not(.site-search *)){outline:3px solid var(--orange-hi);outline-offset:3px}
 :where(a:not(.site-search *)){color:var(--orange-hi)}
 .hero{padding:40px 0 30px}
-h1{font:700 clamp(38px,7.4vw,100px)/.95 var(--font-display),var(--font-body),system-ui,sans-serif;letter-spacing:0}
-@media(max-width:600px){h1{min-height:3.8em}}
+h1{font:700 clamp(48px,7.4vw,100px)/.95 var(--font-display),var(--font-body),system-ui,sans-serif;letter-spacing:0;text-wrap:balance}
+@media(max-width:600px){h1 .br{display:none}}
 h1 .l{color:var(--orange)}.sub{font-size:22px;color:var(--mut);max-width:42ch;margin:24px 0 0}
 .tag{font:700 15px var(--font-mono),monospace;color:var(--orange-hi);margin-top:14px}
 .ed{margin-top:44px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 0 0 1px rgba(240,111,21,.14),0 24px 60px rgba(0,0,0,.5);overflow:hidden}
