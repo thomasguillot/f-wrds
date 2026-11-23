@@ -16,8 +16,8 @@ export default function DocsSearch(props: SharedProps) {
 
   return (
     <SearchDialog {...search} {...props}>
-      <SearchDialogOverlay />
-      <SearchDialogContent>
+      <SearchDialogOverlay className="site-search dark" />
+      <SearchDialogContent className="site-search dark">
         <SearchDialogHeader>
           <SearchDialogIcon />
           <SearchDialogInput />

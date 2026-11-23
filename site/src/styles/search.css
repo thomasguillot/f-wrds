@@ -1,0 +1,61 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@import 'fumadocs-ui/css/lib/base.css';
+@import './fd-theme.css';
+
+@source '../components/docs/Search.tsx';
+@source '../../node_modules/fumadocs-ui/dist/components/dialog/search.js';
+@source '../../node_modules/fumadocs-ui/dist/components/ui/button.js';
+
+@layer base {
+  .site-search,
+  .site-search *,
+  .site-search ::before,
+  .site-search ::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    border-style: solid;
+  }
+
+  .site-search {
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .site-search :is(button, input) {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    background-color: transparent;
+    border-radius: 0;
+    appearance: none;
+  }
+
+  .site-search button {
+    cursor: pointer;
+  }
+
+  .site-search a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  .site-search :is(ol, ul) {
+    list-style: none;
+  }
+
+  .site-search :is(svg, img) {
+    display: block;
+    vertical-align: middle;
+  }
+
+  .site-search input::placeholder {
+    color: var(--color-fd-muted-foreground);
+    opacity: 1;
+  }
+}
