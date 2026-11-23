@@ -129,7 +129,7 @@ main section{padding:0}
 .tabs .pane{grid-area:1/1}
 .js .pane[hidden]{display:flex;visibility:hidden}
 html:not(.js) .pane{margin-bottom:10px}
-.slab{margin-top:16px;border-radius:28px;background:linear-gradient(135deg,#E35A1E,#C9301F);padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end}
+.slab{margin:16px 0 clamp(40px,6vw,72px);border-radius:28px;background:linear-gradient(135deg,#E35A1E,#C9301F);padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end}
 .slab h2{font-size:clamp(36px,4.4vw,60px);line-height:.95;max-width:none;margin:0;text-wrap:balance}
 .slab .btn{background:var(--ink);padding:18px 30px}
 @media(max-width:900px){.bento>*{grid-column:1/-1!important}.tabs{grid-template-columns:1fr}.tabl{flex-direction:row;flex-wrap:wrap}.slab{grid-template-columns:1fr;justify-items:start}.flow{grid-template-columns:1fr}.flow svg{transform:rotate(90deg)}}
