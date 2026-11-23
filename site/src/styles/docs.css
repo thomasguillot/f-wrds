@@ -32,6 +32,14 @@
 }
 
 @media (min-width: 768px) {
+  #nd-page {
+    padding-top: 0;
+  }
+
+  #nd-page h1 {
+    line-height: 1.2;
+  }
+
   #fd-glass-layout > div.sticky {
     padding-inline-end: 0;
     background-image: none;
