@@ -1,0 +1,42 @@
+---
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0E0705" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <Font cssVariable="--font-display" />
+    <Font cssVariable="--font-body" />
+    <Font cssVariable="--font-mono" />
+    <Font cssVariable="--font-hand" />
+    <script is:inline>document.documentElement.classList.add('js')</script>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="g" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.25 16.75H16.75C18.96 16.75 20.75 14.96 20.75 12.75V8C20.75 5.79 18.96 4 16.75 4H7.25C5.04 4 3.25 5.79 3.25 8V12.75C3.25 14.68 4.62 16.29 6.44 16.67V20.25L10.25 16.75Z"></path><path d="M9 7.25V13.5M12 7.25V13.5M7.25 9.1H13.75M7.25 11.65H13.75M16.5 7.25V10.6M16.5 13.5V13.5"></path></symbol>
+    </svg>
+    <slot />
+  </body>
+</html>

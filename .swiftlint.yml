@@ -1,0 +1,36 @@
+# SwiftLint config. Defers to the committed .swift-format on whitespace/indentation so the two
+# tools never fight; line_length matches .swift-format's lineLength (110).
+included:
+  - App/Sources
+  - WrdsKit/Sources
+disabled_rules:
+  # Owned by swift-format (avoid dueling formatters):
+  - trailing_whitespace
+  - opening_brace
+  - statement_position
+  - todo
+  # Line length is enforced by swift-format (lineLength: 110); disabling here avoids
+  # triggering on existing lines that swift-format would wrap in a future format pass.
+  - line_length
+  # Trailing commas on multi-line collection literals are a style preference, and the
+  # house style keeps them so reordering a literal is a one-line diff.
+  - trailing_comma
+file_length:
+  # Count code, not prose. This codebase explains *why* at length in doc comments — KeystrokeMonitor
+  # is 441 lines of which 206 are code, ShellRunner 282 of which 114 — so counting comment-only lines
+  # measures how well a file is documented and warns about the best-explained ones first. Splitting a
+  # cohesive type in two to get under a line count would be a worse file, not a smaller one. The
+  # threshold stays where it is and now applies to the thing it was meant to bound.
+  ignore_comment_only_lines: true
+cyclomatic_complexity:
+  # The renderer's two token tables — strftime specifiers, and Variable.Kind — are each one switch
+  # over a closed vocabulary, where the branch count *is* the spec. Splitting such a table across
+  # functions hides it rather than simplifying it. Every other kind of branch still counts.
+  ignores_case_statements: true
+type_name:
+  min_length: 2
+nesting:
+  # The model kinds (Variable.Kind, FormField.Kind) carry their own CodingKeys for the
+  # hand-written `type`-discriminated JSON, so two levels of type nesting is the intended
+  # shape rather than accidental growth.
+  type_level: 2

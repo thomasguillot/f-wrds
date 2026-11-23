@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Bento from '../components/Bento.astro';
+import Closing from '../components/Closing.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Base
+  title="F Wrds: #@!% typing the same $#!% twice."
+  description="A free, open source text expander for your Mac menu bar, with a real window for managing snippets. MIT-Licensed."
+>
+  <div class="wrap">
+    <Nav />
+    <Hero />
+  </div>
+  <main class="wrap">
+    <Bento />
+    <Closing />
+    <Footer />
+  </main>
+</Base>

@@ -1,0 +1,73 @@
+# Everything F Wrds cannot express, in one file.
+#
+# Not one byte of this may be dropped: every key below has to come back out of `unmapped` verbatim
+# and be named in the report. This is the file that says what "lossless import" means.
+matches:
+  # A whole match body F Wrds has no model for.
+  - trigger: ":pic"
+    image_path: "$CONFIG/images/logo.png"
+
+  # Rich-text bodies — deliberately out of scope for v1, deliberately not thrown away.
+  - trigger: ":bold"
+    html: "<b>hello</b>"
+    markdown: "**hello**"
+
+  # An extension F Wrds does not implement. The whole variable is kept, and the snippet keeps the
+  # token that reads it, so nothing about the author's intent is lost.
+  - trigger: ":ip"
+    replace: "{{ip}}"
+    vars:
+      - name: ip
+        type: script
+        params:
+          args:
+            - python3
+            - fetch_ip.py
+
+  # A regex *and* a literal trigger, which Espanso does not allow either: the regex wins and the
+  # trigger is kept rather than silently dropped. Plus search terms, which are picker metadata.
+  - regex: ":greet(?P<name>.*)\\."
+    trigger: ":greet"
+    replace: "Hi {{name}}!"
+    search_terms:
+      - greeting
+      - hello
+
+  # Variables that map, carrying parameters that do not: a date locale, and choice values written
+  # as label/id objects. The variables survive; only the unrepresentable parameters are kept aside.
+  - trigger: ":when"
+    replace: "{{stamp}} {{pick}}"
+    left_word: true
+    vars:
+      - name: stamp
+        type: date
+        params:
+          format: "%H:%M"
+          locale: "fr-FR"
+      - name: pick
+        type: choice
+        params:
+          values:
+            - label: "Yes please"
+              id: "affirmative"
+            - "No thanks"
+
+  # A form that maps, spelled in ways that do not. The layout is prose as well as fields, and the
+  # prose is the prompt Espanso shows in its own panel; `list` is a spelling of `choice` we cannot
+  # write back unaided; and a `default:` on a choice is a parameter that kind cannot carry.
+  - trigger: ":brief"
+    replace: "{{brief}}"
+    vars:
+      - name: brief
+        type: form
+        params:
+          layout: "Brief for [[client]]:\n[[scope]]"
+          fields:
+            client:
+              type: list
+              values:
+                - "Acme"
+                - "Globex"
+              default: "Acme"
+            scope:
+              multiline: true

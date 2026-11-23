@@ -1,0 +1,16 @@
+# Local tooling and editor/cache dot-directories
+.*/
+!.github/
+!.well-known/
+
+# macOS
+.DS_Store
+
+# Xcode / Swift
+build/
+DerivedData/
+*.xcodeproj
+.swiftpm/
+.build/
+dist/
+node_modules/

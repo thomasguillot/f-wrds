@@ -1,0 +1,80 @@
+# Every Espanso key F Wrds maps natively, in one file.
+#
+# Importing this must produce no `unmapped` entries and an empty report: anything that lands in
+# either from this file is a mapping regression, which is what the "nothing is left over" test
+# pins. Exotica lives in exotic.yml.
+matches:
+  # Plain replace, a label, and the cursor marker mid-content.
+  - trigger: ":sig"
+    label: "Sign off"
+    replace: "Kind regards,\n$|$\nThomas"
+
+  # Several triggers for one expansion, fired only on a word boundary.
+  - triggers:
+      - ":addr"
+      - ":address"
+    word: true
+    replace: "1 Rue de la Paix, Paris"
+
+  # Case propagation, refined by an uppercase style.
+  - trigger: ":ty"
+    propagate_case: true
+    uppercase_style: capitalize_words
+    replace: "thank you kindly"
+
+  # A date variable with a format and a negative offset, and a shell variable.
+  - trigger: ":log"
+    label: "Log entry"
+    replace: "{{yesterday}} on {{branch}}: "
+    vars:
+      - name: yesterday
+        type: date
+        params:
+          format: "%Y-%m-%d"
+          offset: -86400
+      - name: branch
+        type: shell
+        params:
+          cmd: "git rev-parse --abbrev-ref HEAD"
+
+  # A choice, a clipboard read, and a `type: form` variable whose layout is inlined where the
+  # content referenced it.
+  - trigger: ":ship"
+    replace: "Shipping {{flavour}} — {{clip}}\n{{details}}"
+    vars:
+      - name: flavour
+        type: choice
+        params:
+          values:
+            - "alpha"
+            - "beta"
+      - name: clip
+        type: clipboard
+      - name: details
+        type: form
+        params:
+          # Fields and nothing else. A layout with wording in it belongs in exotic.yml: Espanso
+          # shows that wording in its form panel, and F Wrds has nowhere to put it.
+          layout: "[[ticket]] [[owner]]"
+          fields:
+            owner:
+              default: "Thomas"
+
+  # The match-level form shorthand, with fields typed by `form_fields` — one multiline, and one
+  # choice written as a block scalar, which is the spelling Espanso's own form docs use.
+  - trigger: ":greet"
+    form: "Hi [[name]],\n\n[[body]]\n\n[[urgency]]"
+    form_fields:
+      body:
+        multiline: true
+      urgency:
+        type: choice
+        values: |
+          Whenever
+          Today
+
+global_vars:
+  - name: company
+    type: echo
+    params:
+      echo: "F Wrds"
