@@ -1,11 +1,21 @@
 ---
-title: Backup and moving from Espanso
-description: Import Espanso match files, export back to Espanso, and back up or restore everything in F Wrds.
+title: Backup and import
+description: Back up and restore everything in F Wrds, or bring your snippets over from Espanso.
 ---
 
-Everything on this page is in **Settings → Backup and Espanso**. The Espanso items are also in the File menu.
+Everything on this page is in **Settings → Backup and Espanso**.
 
-## Import from Espanso
+## Back up and restore
+
+**Export Backup…** saves every group, snippet, global variable and setting to one file. It is the only export that puts you back exactly where you left off. Use it to move to a new Mac or to go back later.
+
+**Restore Backup…** replaces everything currently in F Wrds with what is in the file. This cannot be undone. F Wrds asks you to confirm first.
+
+## Coming from Espanso
+
+[Espanso](https://espanso.org) is another text expander. If you used it before, F Wrds can import its files, and export your snippets back in the same format. These items are also in the File menu.
+
+### Import from Espanso
 
 Quit Espanso first, then click **Import from Espanso…**. If F Wrds finds Espanso match files in `~/Library/Application Support/espanso/match`, it reads them right away. Otherwise it asks you to choose your Espanso folder, or one or more `.yml` files.
 
@@ -17,7 +27,7 @@ F Wrds shows a preview before anything is added.
 
 Click **Import** to add the groups. A report then lists what could not be mapped. F Wrds keeps those Espanso keys on the snippet and writes them back when you export. Global variables with the same name as one you already have are skipped, and your existing value is used.
 
-## Espanso to F Wrds
+### What maps to what
 
 | Espanso | F Wrds |
 | --- | --- |
@@ -40,12 +50,6 @@ Click **Import** to add the groups. A report then lists what could not be mapped
 
 Files whose names start with an underscore are skipped and listed in the report. Top-level keys other than `matches` and `global_vars` are dropped and named in the report.
 
-## Export to Espanso
+### Export to Espanso
 
 **Export to Espanso…** writes your snippets as Espanso files, one per group. You pick the folder and click **Export Here**. It is not a backup: app filters and on/off switches are left out, and so are shell timeouts. To export one group, right-click it in the sidebar and choose **Export…**.
-
-## Back up and restore
-
-**Export Backup…** saves every group, snippet, global variable and setting to one file. It is the only export that puts you back exactly where you left off. Use it to move to a new Mac or to go back later.
-
-**Restore Backup…** replaces everything currently in F Wrds with what is in the file. This cannot be undone. F Wrds asks you to confirm first.
