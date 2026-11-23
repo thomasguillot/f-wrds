@@ -129,12 +129,10 @@ main section{padding:0}
 .tabs .pane{grid-area:1/1}
 .js .pane[hidden]{display:flex;visibility:hidden}
 html:not(.js) .pane{margin-bottom:10px}
-.slab{margin-top:16px;border-radius:28px;background:linear-gradient(135deg,#E35A1E,#C9301F);padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:2fr 1fr;gap:30px;align-items:end}
+.slab{margin-top:16px;border-radius:28px;background:linear-gradient(135deg,#E35A1E,#C9301F);padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end}
 .slab h2{font-size:clamp(36px,4.4vw,60px);line-height:.95;max-width:none;margin:0;text-wrap:balance}
-.slab .r{display:flex;flex-direction:column;gap:26px;align-items:flex-start}
 .slab .btn{background:var(--ink);padding:18px 30px}
-.slab p{font:600 16px/1.5 var(--font-mono),monospace;color:var(--text)}
-@media(max-width:900px){.bento>*{grid-column:1/-1!important}.tabs{grid-template-columns:1fr}.tabl{flex-direction:row;flex-wrap:wrap}.slab{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.flow svg{transform:rotate(90deg)}}
+@media(max-width:900px){.bento>*{grid-column:1/-1!important}.tabs{grid-template-columns:1fr}.tabl{flex-direction:row;flex-wrap:wrap}.slab{grid-template-columns:1fr;justify-items:start}.flow{grid-template-columns:1fr}.flow svg{transform:rotate(90deg)}}
 @media(hover:hover) and (pointer:fine){.slab .btn:hover{box-shadow:5px 5px 0 var(--bg),10px 10px 0 var(--peach)}}
 .chip:active,.app:active,.tab:active{transform:scale(.97)}
 @media(prefers-reduced-motion:no-preference){.js .bento .tile{opacity:0;transform:translateY(14px)}.js .bento.in .tile{opacity:1;transform:none;transition:opacity 420ms var(--ease-out),transform 520ms var(--ease-out);transition-delay:var(--d,0ms)}}
