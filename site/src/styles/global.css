@@ -133,7 +133,7 @@ html:not(.js) .pane{margin-bottom:10px}
 .slab h2{font-size:clamp(36px,4.4vw,60px);line-height:.95;max-width:none;margin:0;text-wrap:balance}
 .slab .btn{background:var(--ink);padding:18px 30px}
 @media(max-width:900px){.bento>*{grid-column:1/-1!important}.tabs{grid-template-columns:1fr}.tabl{flex-direction:row;flex-wrap:wrap}.slab{grid-template-columns:1fr;justify-items:start}.flow{grid-template-columns:1fr}.flow svg{transform:rotate(90deg)}}
-@media(hover:hover) and (pointer:fine){.slab .btn:hover{box-shadow:5px 5px 0 var(--bg),10px 10px 0 var(--peach)}}
+.slab .btn::after{background:#33170B}
 .chip:active,.app:active,.tab:active{transform:scale(.97)}
 @media(prefers-reduced-motion:no-preference){.js .bento .tile{opacity:0;transform:translateY(14px)}.js .bento.in .tile{opacity:1;transform:none;transition:opacity 420ms var(--ease-out),transform 520ms var(--ease-out);transition-delay:var(--d,0ms)}}
-@media(prefers-reduced-motion:reduce){.ed textarea.glitch,.gl{animation:none}.slab .btn:hover,.chip:active,.app:active,.tab:active,.keys.on .cap{transform:none}.sw::after{transition:background .2s ease}.t-key.shut .mini,.t-key .mini{transform:none}}
+@media(prefers-reduced-motion:reduce){.ed textarea.glitch,.gl{animation:none}.chip:active,.app:active,.tab:active,.keys.on .cap{transform:none}.sw::after{transition:background .2s ease}.t-key.shut .mini,.t-key .mini{transform:none}}
