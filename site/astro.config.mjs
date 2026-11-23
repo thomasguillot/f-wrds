@@ -6,6 +6,7 @@ import fumadocs from '@fumadocs/astro';
 export default defineConfig({
   site: 'https://fwrds.space.fast',
   output: 'static',
+  trailingSlash: 'always',
   integrations: [fumadocs({ components: './src/components/mdx.tsx' }), sitemap()],
   vite: {
     plugins: [tailwindcss()],

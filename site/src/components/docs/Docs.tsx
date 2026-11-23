@@ -4,6 +4,7 @@ import type { TOCItemType } from 'fumadocs-core/toc';
 import { RootProvider } from 'fumadocs-ui/provider/astro';
 import { DocsLayout } from 'fumadocs-ui/layouts/glass';
 import { DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/glass/page';
+import { SiteLink, navigate } from '../../lib/links';
 import DocsSearch from './Search';
 
 interface DocsProps {
@@ -23,10 +24,16 @@ export function Docs({ pathname, params, tree, title, description, toc, children
     <RootProvider
       pathname={pathname}
       params={params}
+      navigate={navigate}
+      components={{ Link: SiteLink }}
       theme={{ enabled: false, hotKey: false }}
       search={{ SearchDialog: DocsSearch }}
     >
-      <DocsLayout tree={data.tree} nav={{ title: 'Docs', url: '/docs' }} themeSwitch={{ enabled: false }}>
+      <DocsLayout
+        tree={data.tree}
+        nav={{ title: 'Docs', url: '/docs/' }}
+        themeSwitch={{ enabled: false }}
+      >
         <DocsPage toc={toc}>
           <DocsTitle>{title}</DocsTitle>
           <DocsDescription>{description}</DocsDescription>

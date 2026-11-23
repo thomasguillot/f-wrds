@@ -9,12 +9,15 @@ import '../styles/global.css';
 <Base
   title="F Wrds: #@!% typing the same $#!% twice."
   description="A free, open source text expander for your Mac menu bar, with a real window for managing snippets. MIT-Licensed."
+  skipTarget="main"
 >
-  <div class="wrap">
-    <Hero />
-  </div>
-  <main class="wrap">
-    <Bento />
-    <Closing />
+  <main id="main">
+    <div class="wrap">
+      <Hero />
+    </div>
+    <div class="wrap">
+      <Bento />
+      <Closing />
+    </div>
   </main>
 </Base>

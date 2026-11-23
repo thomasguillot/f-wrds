@@ -10,7 +10,7 @@ interface Props {
 const { title, description } = Astro.props;
 ---
 
-<Base title={`${title} | F Wrds Docs`} description={description} ogType="article" htmlClass="dark">
+<Base title={`${title} | F Wrds Docs`} description={description} ogType="article" htmlClass="dark" skipTarget="nd-page">
   <div class="wrap docs-wrap">
     <slot />
   </div>

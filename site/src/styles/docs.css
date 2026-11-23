@@ -61,3 +61,7 @@
 body > div:has(#nd-mobile-sidebar) {
   position: relative;
 }
+
+#fd-glass-layout > a[href="#nd-page"] {
+  display: none;
+}
