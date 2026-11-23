@@ -49,13 +49,16 @@ const loadStylesheet = (): Promise<void> =>
 let ready: Promise<void> | null = null;
 
 const mount = async (): Promise<void> => {
-  await loadStylesheet();
+  if (!document.documentElement.classList.contains('docs')) await loadStylesheet();
   const host = document.createElement('div');
   document.body.append(host);
   createRoot(host).render(<SiteSearch />);
 };
 
-export const open = (): void => {
+export const open = async (): Promise<void> => {
   ready ??= mount();
-  void ready.then(() => setOpen(true));
+  await ready;
+  setOpen(true);
 };
+
+export const toggle = (): Promise<void> | void => (isOpen ? setOpen(false) : open());

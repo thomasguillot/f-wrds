@@ -1,16 +1,23 @@
-let loading: Promise<typeof import('./site-search')> | null = null;
+type SearchModule = typeof import('./site-search');
 
-const openSearch = (): void => {
+const isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+let loading: Promise<SearchModule> | null = null;
+
+const withSearch = (action: (search: SearchModule) => void): void => {
   loading ??= import('./site-search');
-  void loading.then((search) => search.open());
+  loading.then(action).catch(() => {
+    loading = null;
+    window.location.assign('/docs/');
+  });
 };
 
 document.querySelectorAll<HTMLButtonElement>('[data-site-search]').forEach((button) => {
-  button.addEventListener('click', openSearch);
+  button.addEventListener('click', () => withSearch((search) => search.open()));
 });
 
 document.addEventListener('keydown', (event) => {
-  if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
+  if (event.isComposing || event.key.toLowerCase() !== 'k' || event.altKey || event.shiftKey) return;
+  if (isMac ? !event.metaKey || event.ctrlKey : !event.ctrlKey || event.metaKey) return;
   event.preventDefault();
-  openSearch();
+  withSearch((search) => search.toggle());
 });
