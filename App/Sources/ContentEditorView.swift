@@ -270,6 +270,7 @@ struct ContentEditorView: NSViewRepresentable {
             let selection = NSRange(location: min(target, attributed.length), length: 0)
             textView.setSelectedRange(selection)
             if reveal { textView.scrollRangeToVisible(selection) }
+            NSAccessibility.post(element: textView, notification: .layoutChanged)
         }
 
         /// Rebuilds after light or dark mode changed, which every chip image was drawn for.
@@ -348,6 +349,7 @@ struct ContentEditorView: NSViewRepresentable {
             }
             isApplyingOwnEdit = false
             textView.typingAttributes = baseAttributes
+            NSAccessibility.post(element: textView, notification: .layoutChanged)
 
             let shift = typed
                 .filter { $0.range.location + $0.range.length <= caret }
