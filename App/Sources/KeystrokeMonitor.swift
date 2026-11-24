@@ -50,8 +50,9 @@ import WrdsKit
 /// callbacks are the caller's to make safe under the contract above.
 final class KeystrokeMonitor: @unchecked Sendable {
 
-    /// One keystroke, already translated. Called on the tap thread.
-    var onKeyInput: ((KeyInput) -> Void)?
+    /// One keystroke, already translated, and whether another app sent it rather than the keyboard.
+    /// Called on the tap thread.
+    var onKeyInput: ((KeyInput, _ fromAnotherApp: Bool) -> Void)?
 
     /// The user clicked somewhere, so the caret is no longer where the typed characters were. Called
     /// on the tap thread.
@@ -344,6 +345,10 @@ final class KeystrokeMonitor: @unchecked Sendable {
     /// Turns one key press into a `KeyInput`, or into nothing at all.
     private func translate(_ event: CGEvent) {
         let flags = event.flags
+        // The keyboard reports no sending process; anything that does was posted by an app, such as
+        // another text expander deleting its own trigger.
+        let fromAnotherApp = event.getIntegerValueField(.eventSourceUnixProcessID) != 0
+        let onKeyInput = onKeyInput.map { callback in { (input: KeyInput) in callback(input, fromAnotherApp) } }
         // ⌘ and ⌃ make a keystroke a command rather than text — ⌘A, ⌃E, ⌘← — and every one of them
         // either moves the caret or replaces what is around it. ⌥ deliberately does not qualify:
         // option-typed characters (é, ñ, œ) are ordinary text and arrive as printable unicode below.

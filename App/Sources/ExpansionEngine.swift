@@ -219,9 +219,9 @@ final class ExpansionEngine: @unchecked Sendable {
     init() {
         // Set here rather than in `start()`: the monitor reads these from its own thread with no
         // synchronisation, so assigning one while a tap is live would race it.
-        monitor.onKeyInput = { [weak self] input in
+        monitor.onKeyInput = { [weak self] input, fromAnotherApp in
             guard let self else { return }
-            queue.async { self.handle(input) }
+            queue.async { self.handle(input, fromAnotherApp: fromAnotherApp) }
         }
         monitor.onBufferInvalidatingEvent = { [weak self] in
             guard let self else { return }
@@ -268,7 +268,11 @@ final class ExpansionEngine: @unchecked Sendable {
     // MARK: Keystrokes
 
     /// Runs on `queue`.
-    private func handle(_ input: KeyInput) {
+    ///
+    /// Undo only answers a backspace from the keyboard. Another expander deleting its own trigger
+    /// sends backspaces too, and treating one of those as the user's would take back this
+    /// expansion and retype the trigger in the middle of the other app's work.
+    private func handle(_ input: KeyInput, fromAnotherApp: Bool) {
         guard !isPaused, !isPanelSuspended, !formPending else {
             // Nothing typed while paused — or while one of this app's own panels is up, whether it
             // is the search palette waiting on a query or a form panel waiting on an answer — is in
@@ -279,7 +283,7 @@ final class ExpansionEngine: @unchecked Sendable {
             return
         }
 
-        if input == .backspace, let undo = pendingUndo, settings.undoOnBackspace,
+        if input == .backspace, !fromAnotherApp, let undo = pendingUndo, settings.undoOnBackspace,
            Date().timeIntervalSince(undo.injectedAt) < Self.undoWindow {
             pendingUndo = nil
             performUndo(undo)

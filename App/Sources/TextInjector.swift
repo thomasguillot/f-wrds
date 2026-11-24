@@ -67,6 +67,7 @@ final class TextInjector: @unchecked Sendable {
     private static let vKeyCode: CGKeyCode = 9
     private static let deleteKeyCode: CGKeyCode = 51
     private static let leftArrowKeyCode: CGKeyCode = 123
+    private static let commandKeyCode: CGKeyCode = 55
 
     /// The most UTF-16 units `CGEvent.keyboardSetUnicodeString` accepts on one event. Documented as
     /// 20; longer strings are truncated rather than refused, which is why `typeText` chunks.
@@ -164,7 +165,7 @@ final class TextInjector: @unchecked Sendable {
         // damage: it would be emptied and refilled to paste nothing at all.
         guard source != nil else { return }
         let generation = clipboardQueue.sync { borrowClipboard(for: text) }
-        press(Self.vKeyCode, flags: .maskCommand)
+        pressWithCommand(Self.vKeyCode)
         clipboardQueue.asyncAfter(deadline: .now() + max(delay, 0)) { [self] in
             returnClipboard(generation: generation)
         }
@@ -321,6 +322,24 @@ final class TextInjector: @unchecked Sendable {
             else { continue }
             post(event, flags: flags)
         }
+    }
+
+    /// Presses `virtualKey` with ⌘ held, bracketed by a ⌘ press and release of its own.
+    ///
+    /// A ⌘-flagged key posted at the HID tap with no ⌘ release after it leaves the system believing
+    /// ⌘ is still down for a moment, and the user's next real keystroke arrives with it: a space
+    /// typed straight after an expansion becomes ⌘Space and opens Spotlight or a launcher instead.
+    /// The explicit release is what clears that state.
+    private func pressWithCommand(_ virtualKey: CGKeyCode) {
+        guard let source,
+              let commandDown = CGEvent(keyboardEventSource: source, virtualKey: Self.commandKeyCode,
+                                        keyDown: true),
+              let commandUp = CGEvent(keyboardEventSource: source, virtualKey: Self.commandKeyCode,
+                                      keyDown: false)
+        else { return }
+        post(commandDown, flags: .maskCommand)
+        press(virtualKey, flags: .maskCommand)
+        post(commandUp, flags: [])
     }
 
     /// Stamps `event` as this app's, sets exactly the modifiers asked for, and sends it.
