@@ -26,6 +26,15 @@ struct MenuBarView: View {
             }
             Divider()
         }
+        if model.isEspansoRunning {
+            Text("Espanso is running too, so snippets come out garbled.")
+            Button {
+                model.quitEspanso()
+            } label: {
+                Label("Quit Espanso", systemImage: "xmark.circle")
+            }
+            Divider()
+        }
         // A hotkey conflict is unrelated to the engine, so it gets its own line rather than
         // outranking or being buried under the one above.
         if let hotKeyFailure = model.hotKeyFailure {

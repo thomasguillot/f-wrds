@@ -44,7 +44,7 @@ extension HelpTopic {
             ]),
             .paragraph("If something is missing, choose **Help → Run Setup Again…** to grant them."),
             .heading("Don't run Espanso at the same time"),
-            .paragraph("If Espanso is still running, both apps react to the same trigger and the text appears twice. Quit Espanso before you use F Wrds.")
+            .paragraph("If Espanso is still running, both apps react to the same trigger and the text comes out garbled. F Wrds warns you when it spots Espanso and offers to quit it.")
             ]
         case .snippets:
             [
@@ -155,8 +155,8 @@ extension HelpTopic {
                 "Check that **Expand snippets** is on and that **Pause in** followed by the app name is off.",
                 "Check that the group and the snippet are both enabled, and that the group's app filter includes the app you are in."
             ]),
-            .heading("Text appears twice"),
-            .paragraph("Espanso is probably still running. Quit it."),
+            .heading("Text comes out garbled"),
+            .paragraph("Espanso is probably still running. Click **Quit Espanso** at the top of the menu bar menu."),
             .heading("An app ignores the paste"),
             .paragraph("Switch that app to typing. Add it under **Exceptions by app** in **Settings → Insertion** and set it to **Typed**."),
             .heading("A shell variable shows ⚠︎"),

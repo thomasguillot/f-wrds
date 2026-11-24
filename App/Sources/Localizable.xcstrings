@@ -2223,19 +2223,53 @@
         }
       }
     },
-    "Espanso is probably still running. Quit it.": {
+    "Espanso is probably still running. Click **Quit Espanso** at the top of the menu bar menu.": {
       "extractionState": "extracted_with_value",
       "localizations": {
         "en-GB": {
           "stringUnit": {
             "state": "translated",
-            "value": "Espanso is probably still running. Quit it."
+            "value": "Espanso is probably still running. Click **Quit Espanso** at the top of the menu bar menu."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Espanso tourne probablement encore. Quittez-le."
+            "value": "Espanso tourne probablement encore. Cliquez sur **Quitter Espanso** en haut du menu de la barre des menus."
+          }
+        }
+      }
+    },
+    "Espanso is running too, so snippets come out garbled.": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espanso is running too, so snippets come out garbled."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espanso tourne aussi, donc vos extraits sortent mélangés."
+          }
+        }
+      }
+    },
+    "Espanso, another text expander, is still running. Both apps react to the same triggers, so your text comes out garbled. Quit Espanso to fix it.": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espanso, another text expander, is still running. Both apps react to the same triggers, so your text comes out garbled. Quit Espanso to fix it."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espanso, un autre outil d'expansion de texte, tourne encore. Les deux apps réagissent aux mêmes déclencheurs, donc votre texte sort mélangé. Quittez Espanso pour régler le problème."
           }
         }
       }
@@ -3131,19 +3165,19 @@
         }
       }
     },
-    "If Espanso is still running, both apps react to the same trigger and the text appears twice. Quit Espanso before you use F Wrds.": {
+    "If Espanso is still running, both apps react to the same trigger and the text comes out garbled. F Wrds warns you when it spots Espanso and offers to quit it.": {
       "extractionState": "extracted_with_value",
       "localizations": {
         "en-GB": {
           "stringUnit": {
             "state": "translated",
-            "value": "If Espanso is still running, both apps react to the same trigger and the text appears twice. Quit Espanso before you use F Wrds."
+            "value": "If Espanso is still running, both apps react to the same trigger and the text comes out garbled. F Wrds warns you when it spots Espanso and offers to quit it."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Si Espanso tourne encore, les deux apps réagissent au même déclencheur et le texte apparaît deux fois. Quittez Espanso avant d'utiliser F Wrds."
+            "value": "Si Espanso tourne encore, les deux apps réagissent au même déclencheur et le texte sort mélangé. F Wrds vous prévient quand il repère Espanso et propose de le quitter."
           }
         }
       }
@@ -4784,6 +4818,23 @@
         }
       }
     },
+    "Quit Espanso": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit Espanso"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitter Espanso"
+          }
+        }
+      }
+    },
     "Quit F Wrds": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -5770,19 +5821,19 @@
         }
       }
     },
-    "Text appears twice": {
+    "Text comes out garbled": {
       "extractionState": "extracted_with_value",
       "localizations": {
         "en-GB": {
           "stringUnit": {
             "state": "translated",
-            "value": "Text appears twice"
+            "value": "Text comes out garbled"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Le texte apparaît deux fois"
+            "value": "Le texte sort mélangé"
           }
         }
       }

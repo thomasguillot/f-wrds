@@ -81,6 +81,10 @@ final class AppModel {
     /// `reregisterHotKeys()` is what writes it.
     var hotKeyFailure: String?
 
+    /// Whether Espanso is running alongside F Wrds, which garbles every trigger the two share. See
+    /// `EspansoProcess`.
+    private(set) var isEspansoRunning = false
+
     /// The most recent thing a store could not do — read a file, or save one — written for the user
     /// and shown by `StoreFailureBanner`. `nil` when there is nothing to say.
     ///
@@ -196,7 +200,7 @@ final class AppModel {
         settingsStore = SettingsStore(directory: directory)
 
         // Before `load()`, because loading is what first tells the engine what to match against.
-        engine.onExpanded = { [weak self] snippet in self?.recordExpansion(of: snippet) }
+        engine.onExpanded = { [weak self] in self?.recordExpansion(of: $0); self?.refreshEspansoCheck() }
         engine.onNeedsForm = { [weak self] snippet, variable, fields, match, originBundleID, flow in
             self?.formNeeded(FormPanelController.FormRequest(
                 snippet: snippet, variable: variable, fields: fields, match: match,
@@ -518,6 +522,7 @@ final class AppModel {
         // The engine is told the truth, including when the app in front is F Wrds itself: per-app
         // group rules are about where the caret actually is.
         engine.rebuildActiveSnippets(frontmostBundleID: bundleID)
+        refreshEspansoCheck()
     }
 
     /// Whether expansion is currently paused in `bundleID`.
@@ -620,6 +625,20 @@ extension AppModel {
         NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first?.activate()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    /// Checked at launch, on every app switch and after every expansion rather than on a timer: those
+    /// are the moments a clash shows, and listing the processes costs about a millisecond.
+    func refreshEspansoCheck() {
+        isEspansoRunning = EspansoProcess.isRunning
+    }
+
+    /// Stops Espanso, then checks again so the warning goes away.
+    func quitEspanso() {
+        Task.detached(priority: .userInitiated) {
+            EspansoProcess.stop()
+            await MainActor.run { [weak self] in self?.refreshEspansoCheck() }
         }
     }
 }
