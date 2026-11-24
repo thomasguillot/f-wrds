@@ -33,6 +33,37 @@ struct ChipVocabulary: Equatable {
         case .global: return "globe"
         }
     }
+
+    /// What VoiceOver says for a chip: its kind, its name, and the detail that tells it apart from
+    /// another of the same kind.
+    static func spokenDescription(of token: TokenSerialiser.Token, in variables: [Variable]) -> String {
+        guard let variable = variables.first(where: { $0.name == token.name }) else { return token.label }
+        let name = variable.name
+        switch variable.kind {
+        case .date(let format, _):
+            return String(localized: "Date variable \(name), format \(format)")
+        case .clipboard:
+            return String(localized: "Clipboard variable \(name)")
+        case .choice(let options):
+            let listed = options.filter { !$0.isEmpty }
+            guard !listed.isEmpty else { return String(localized: "Choice variable \(name), no options yet") }
+            return String(localized: "Choice variable \(name): \(listed.formatted(.list(type: .or)))")
+        case .echo:
+            return String(localized: "Fixed text variable \(name)")
+        case .shell:
+            return String(localized: "Shell variable \(name)")
+        case .form(let fields):
+            guard let fieldName = token.field else {
+                return String(localized: "Ask me variable \(name), no question chosen")
+            }
+            let question = fields.first { $0.name == fieldName }
+                .map { $0.label.isEmpty ? $0.name : $0.label } ?? fieldName
+            return String(localized: "Ask me variable \(name), question: \(question)")
+        case .global(let target):
+            guard !target.isEmpty else { return String(localized: "Global variable \(name), none chosen") }
+            return String(localized: "Global variable \(name), uses \(target)")
+        }
+    }
 }
 
 /// One `{{token}}` drawn as a capsule inside the content editor.

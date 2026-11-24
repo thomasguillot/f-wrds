@@ -37,6 +37,12 @@ struct VariableConfigPopover: View {
         .padding(14)
         .frame(width: 340)
         .onAppear { name = variable.name }
+        // An undo or redo can rename the variable under the popover; without this, closing it would
+        // apply the stale name all over again.
+        .onChange(of: variable.name) { _, renamed in
+            name = renamed
+            nameError = nil
+        }
         .onDisappear {
             applyRename()
             onCommit()

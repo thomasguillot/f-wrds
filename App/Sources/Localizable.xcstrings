@@ -847,6 +847,23 @@
         }
       }
     },
+    "Add Trigger": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Trigger"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un déclencheur"
+          }
+        }
+      }
+    },
     "Add Variable": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1237,6 +1254,40 @@
         }
       }
     },
+    "Ask me variable %@, no question chosen": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask me variable %@, no question chosen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable Demandez-moi %@, aucune question choisie"
+          }
+        }
+      }
+    },
+    "Ask me variable %@, question: %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask me variable %@, question: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable Demandez-moi %@, question : %@"
+          }
+        }
+      }
+    },
     "Automatically check for updates": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1390,6 +1441,91 @@
         }
       }
     },
+    "Change Label": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Label"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'étiquette"
+          }
+        }
+      }
+    },
+    "Change Option": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Option"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'option"
+          }
+        }
+      }
+    },
+    "Change Regular Expression": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Regular Expression"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'expression régulière"
+          }
+        }
+      }
+    },
+    "Change Trigger Type": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Trigger Type"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier le type de déclencheur"
+          }
+        }
+      }
+    },
+    "Change Variable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Variable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier la variable"
+          }
+        }
+      }
+    },
     "Check for Updates…": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1471,6 +1607,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choix"
+          }
+        }
+      }
+    },
+    "Choice variable %@, no options yet": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choice variable %@, no options yet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de choix %@, sans option pour l'instant"
+          }
+        }
+      }
+    },
+    "Choice variable %@: %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choice variable %@: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de choix %@ : %@"
           }
         }
       }
@@ -1662,6 +1832,23 @@
         }
       }
     },
+    "Clipboard variable %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipboard variable %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable presse-papiers %@"
+          }
+        }
+      }
+    },
     "Close": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1709,6 +1896,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Commande"
+          }
+        }
+      }
+    },
+    "Configure %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configure %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurer %@"
           }
         }
       }
@@ -1934,6 +2138,23 @@
         }
       }
     },
+    "Date variable %@, format %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date variable %@, format %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de date %@, format %@"
+          }
+        }
+      }
+    },
     "Default": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -2032,6 +2253,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Supprimer “%@” ?"
+          }
+        }
+      }
+    },
+    "Disable Snippet": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable Snippet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactiver l'extrait"
           }
         }
       }
@@ -2168,6 +2406,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "La modification est désactivée car F Wrds n'a pas pu lire votre bibliothèque d'extraits."
+          }
+        }
+      }
+    },
+    "Enable Snippet": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable Snippet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activer l'extrait"
           }
         }
       }
@@ -2859,6 +3114,23 @@
         }
       }
     },
+    "Fixed text variable %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixed text variable %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de texte fixe %@"
+          }
+        }
+      }
+    },
     "For example, the pattern `:hi(?<name>\\w+)` expands on `:hiAnna`, and `{{name}}` in the content becomes `Anna`.": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -2991,6 +3263,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Variable globale"
+          }
+        }
+      }
+    },
+    "Global variable %@, none chosen": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Global variable %@, none chosen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable globale %@, aucune choisie"
+          }
+        }
+      }
+    },
+    "Global variable %@, uses %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Global variable %@, uses %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable globale %@, utilise %@"
           }
         }
       }
@@ -4954,6 +5260,40 @@
         }
       }
     },
+    "Remove Trigger": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Trigger"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le déclencheur"
+          }
+        }
+      }
+    },
+    "Remove Variable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Variable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer la variable"
+          }
+        }
+      }
+    },
     "Remove exception for %@": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -5443,6 +5783,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les commandes shell et le presse-papiers ne sont pas lus pendant la modification. Les questions affichent leur texte, et %@ indique où se place le curseur."
+          }
+        }
+      }
+    },
+    "Shell variable %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell variable %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable Shell %@"
           }
         }
       }
@@ -6793,6 +7150,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Taper"
+          }
+        }
+      }
+    },
+    "Typing": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typing"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisie"
           }
         }
       }

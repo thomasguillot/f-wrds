@@ -10,6 +10,8 @@ struct PickerGroupEntry: Identifiable {
     var id: UUID { group.id }
 }
 
+extension AppModel: SnippetEditingModel {}
+
 /// Groups, snippets and global variables: every mutation `GroupsSidebarView`, `SnippetListView`,
 /// `SnippetEditorView` and `GlobalsEditorView` can make. Split out of `AppModel.swift` because that
 /// class body was over SwiftLint's line ceiling with this inlined — see the note at

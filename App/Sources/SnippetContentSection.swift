@@ -11,7 +11,9 @@ import WrdsKit
 struct SnippetContentSection: View {
     @Environment(AppModel.self) private var model
     @Binding var draft: Snippet
-    let onCommit: () -> Void
+    let undo: SnippetUndoController
+    /// Persists the draft, recording the edit as an undo step when one is given.
+    let onCommit: (SnippetEdit?) -> Void
 
     @State private var controller = ContentEditorController()
     @State private var isRawMode = false
@@ -38,6 +40,12 @@ struct SnippetContentSection: View {
             chipVariableID = nil
             unusedVariableID = nil
         }
+        // An undo can take away the variable a popover is showing.
+        .onChange(of: draft.variables.map(\.id)) { _, ids in
+            if let id = chipVariableID, !ids.contains(id) { chipVariableID = nil }
+            if let id = unusedVariableID, !ids.contains(id) { unusedVariableID = nil }
+        }
+        .onAppear { undo.onContentRestored = { [controller] in controller.revealNextChange() } }
     }
 
     // MARK: Controls
@@ -80,7 +88,9 @@ struct SnippetContentSection: View {
     private var editor: some View {
         ContentEditorView(
             text: $draft.content,
+            documentID: draft.id,
             vocabulary: ChipVocabulary(variables: draft.variables),
+            variables: draft.variables,
             isRawMode: isRawMode,
             isMonospaced: true,
             controller: controller,
@@ -89,7 +99,13 @@ struct SnippetContentSection: View {
                 chipAnchor = rect
                 chipVariableID = variable.id
             },
-            onEndEditing: onCommit)
+            onTextEdit: { content, continuing in
+                undo.recordTyping(content: content, continuing: continuing)
+            },
+            onEndEditing: {
+                undo.breakTyping()
+                onCommit(nil)
+            })
         .frame(minHeight: 180)
         .popover(
             isPresented: Binding(
@@ -110,7 +126,10 @@ struct SnippetContentSection: View {
                 onRename: { previous, updated in
                     draft.content = TokenSerialiser.renaming(previous, to: updated, in: draft.content)
                 },
-                onCommit: onCommit)
+                onCommit: { onCommit(.changeVariable) })
+            // VoiceOver can open another chip while this popover is still up; a fresh view per
+            // variable keeps the name field from showing the previous one's.
+            .id(id)
         }
     }
 
@@ -176,7 +195,7 @@ struct SnippetContentSection: View {
         draft.variables.append(variable)
         let rect = controller.insert(token: Self.token(for: variable),
                                      vocabulary: ChipVocabulary(variables: draft.variables))
-        onCommit()
+        onCommit(.insertVariable)
         if let rect { chipAnchor = rect }
         chipVariableID = variable.id
     }
@@ -185,7 +204,7 @@ struct SnippetContentSection: View {
         guard model.canEditSnippets else { return }
         controller.insert(token: Self.token(for: variable),
                           vocabulary: ChipVocabulary(variables: draft.variables))
-        onCommit()
+        onCommit(.insertVariable)
     }
 
     private func remove(_ variable: Variable) {
@@ -193,7 +212,7 @@ struct SnippetContentSection: View {
         draft.variables.removeAll { $0.id == variable.id }
         if unusedVariableID == variable.id { unusedVariableID = nil }
         if chipVariableID == variable.id { chipVariableID = nil }
-        onCommit()
+        onCommit(.removeVariable)
     }
 
     /// The token that reads a variable. A form is several values rather than one, so its token
