@@ -83,6 +83,7 @@ struct SnippetContentSection: View {
         ContentEditorView(
             text: $draft.content,
             vocabulary: ChipVocabulary(variables: draft.variables),
+            variables: draft.variables,
             isRawMode: isRawMode,
             isMonospaced: true,
             controller: controller,
@@ -119,6 +120,9 @@ struct SnippetContentSection: View {
                     draft.content = TokenSerialiser.renaming(previous, to: updated, in: draft.content)
                 },
                 onCommit: { onCommit(.changeVariable) })
+            // VoiceOver can open another chip while this popover is still up; a fresh view per
+            // variable keeps the name field from showing the previous one's.
+            .id(id)
         }
     }
 

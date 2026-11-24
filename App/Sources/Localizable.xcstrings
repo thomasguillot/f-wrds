@@ -1254,6 +1254,40 @@
         }
       }
     },
+    "Ask me variable %@, no question chosen": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask me variable %@, no question chosen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable Demandez-moi %@, aucune question choisie"
+          }
+        }
+      }
+    },
+    "Ask me variable %@, question: %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask me variable %@, question: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable Demandez-moi %@, question : %@"
+          }
+        }
+      }
+    },
     "Automatically check for updates": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1577,6 +1611,40 @@
         }
       }
     },
+    "Choice variable %@, no options yet": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choice variable %@, no options yet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de choix %@, sans option pour l'instant"
+          }
+        }
+      }
+    },
+    "Choice variable %@: %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choice variable %@: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de choix %@ : %@"
+          }
+        }
+      }
+    },
     "Choose **Regex** to match a pattern instead of fixed text. Names captured by the pattern can be used in the content.": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1764,6 +1832,23 @@
         }
       }
     },
+    "Clipboard variable %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipboard variable %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable presse-papiers %@"
+          }
+        }
+      }
+    },
     "Close": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1811,6 +1896,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Commande"
+          }
+        }
+      }
+    },
+    "Configure %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configure %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurer %@"
           }
         }
       }
@@ -2032,6 +2134,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Date"
+          }
+        }
+      }
+    },
+    "Date variable %@, format %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date variable %@, format %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de date %@, format %@"
           }
         }
       }
@@ -2995,6 +3114,23 @@
         }
       }
     },
+    "Fixed text variable %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixed text variable %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable de texte fixe %@"
+          }
+        }
+      }
+    },
     "For example, the pattern `:hi(?<name>\\w+)` expands on `:hiAnna`, and `{{name}}` in the content becomes `Anna`.": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -3127,6 +3263,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Variable globale"
+          }
+        }
+      }
+    },
+    "Global variable %@, none chosen": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Global variable %@, none chosen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable globale %@, aucune choisie"
+          }
+        }
+      }
+    },
+    "Global variable %@, uses %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Global variable %@, uses %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable globale %@, utilise %@"
           }
         }
       }
@@ -5613,6 +5783,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les commandes shell et le presse-papiers ne sont pas lus pendant la modification. Les questions affichent leur texte, et %@ indique où se place le curseur."
+          }
+        }
+      }
+    },
+    "Shell variable %@": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell variable %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variable Shell %@"
           }
         }
       }
