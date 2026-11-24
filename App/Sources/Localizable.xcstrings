@@ -847,6 +847,23 @@
         }
       }
     },
+    "Add Trigger": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Trigger"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un déclencheur"
+          }
+        }
+      }
+    },
     "Add Variable": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -1386,6 +1403,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "Majuscules"
+          }
+        }
+      }
+    },
+    "Change Label": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Label"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'étiquette"
+          }
+        }
+      }
+    },
+    "Change Option": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Option"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'option"
+          }
+        }
+      }
+    },
+    "Change Regular Expression": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Regular Expression"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'expression régulière"
+          }
+        }
+      }
+    },
+    "Change Trigger Type": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Trigger Type"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier le type de déclencheur"
+          }
+        }
+      }
+    },
+    "Change Variable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Variable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier la variable"
           }
         }
       }
@@ -2036,6 +2138,23 @@
         }
       }
     },
+    "Disable Snippet": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disable Snippet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Désactiver l'extrait"
+          }
+        }
+      }
+    },
     "Dismiss": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -2168,6 +2287,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "La modification est désactivée car F Wrds n'a pas pu lire votre bibliothèque d'extraits."
+          }
+        }
+      }
+    },
+    "Enable Snippet": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable Snippet"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activer l'extrait"
           }
         }
       }
@@ -4954,6 +5090,40 @@
         }
       }
     },
+    "Remove Trigger": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Trigger"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer le déclencheur"
+          }
+        }
+      }
+    },
+    "Remove Variable": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Variable"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer la variable"
+          }
+        }
+      }
+    },
     "Remove exception for %@": {
       "extractionState": "extracted_with_value",
       "localizations": {
@@ -6793,6 +6963,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Taper"
+          }
+        }
+      }
+    },
+    "Typing": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en-GB": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typing"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saisie"
           }
         }
       }

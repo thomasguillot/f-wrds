@@ -177,6 +177,23 @@ enum TokenSerialiser {
         return offset
     }
 
+    /// The UTF-16 offset in `new` just past where it stops matching `old`, found by trimming the
+    /// prefix and suffix the two share.
+    static func endOfChange(from old: String, to new: String) -> Int {
+        let before = Array(old.utf16)
+        let after = Array(new.utf16)
+        var prefix = 0
+        while prefix < before.count, prefix < after.count, before[prefix] == after[prefix] {
+            prefix += 1
+        }
+        var suffix = 0
+        while suffix < before.count - prefix, suffix < after.count - prefix,
+              before[before.count - 1 - suffix] == after[after.count - 1 - suffix] {
+            suffix += 1
+        }
+        return after.count - suffix
+    }
+
     // MARK: Renaming
 
     /// `raw` with every `{{old}}` / `{{old.field}}` respelled to `new`, and every other token, and all

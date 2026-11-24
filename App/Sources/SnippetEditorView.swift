@@ -15,6 +15,7 @@ import WrdsKit
 /// both driven by this draft: what the preview shows is the unsaved snippet, not the saved one.
 struct SnippetEditorView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.undoManager) private var undoManager
     let snippetID: UUID
 
     @State private var draft = Snippet()
@@ -25,6 +26,7 @@ struct SnippetEditorView: View {
     /// mis-click on the mode picker throws the other away.
     @State private var setAsideTriggers: [String] = []
     @State private var setAsideRegex: String?
+    @State private var undo = SnippetUndoController()
     @FocusState private var newTriggerFocused: Bool
     @FocusState private var labelFocused: Bool
     @FocusState private var regexFocused: Bool
@@ -74,11 +76,11 @@ struct SnippetEditorView: View {
             Section("Label") {
                 TextField("Label", text: $draft.label, prompt: Text("Optional name, shown in lists and in search"))
                     .focused($labelFocused)
-                    .onChange(of: labelFocused) { was, now in if was, !now { commit() } }
+                    .onChange(of: labelFocused) { was, now in if was, !now { commit(.changeLabel) } }
             }
 
             Section("Content") {
-                SnippetContentSection(draft: $draft, onCommit: commit)
+                SnippetContentSection(draft: $draft, undo: undo, onCommit: commit)
             }
 
             Section("Preview") {
@@ -86,18 +88,18 @@ struct SnippetEditorView: View {
             }
 
             Section("Options") {
-                Toggle("Only expand after a space or punctuation", isOn: binding(\.wordBoundary))
+                Toggle("Only expand after a space or punctuation", isOn: binding(\.wordBoundary, .changeOption))
                     .help("Expands only after a space or punctuation, so \u{201C}sig\u{201D} doesn't expand inside \u{201C}design\u{201D}.")
-                Toggle("Match the case I type", isOn: binding(\.propagateCase))
+                Toggle("Match the case I type", isOn: binding(\.propagateCase, .changeOption))
                     .help("Type the trigger with a capital letter and the text follows. Type it in capitals and the text is in capitals.")
-                Picker("Capital letters", selection: binding(\.uppercaseStyle)) {
+                Picker("Capital letters", selection: binding(\.uppercaseStyle, .changeOption)) {
                     Text("None").tag(UppercaseStyle?.none)
                     Text("First letter").tag(UppercaseStyle?.some(.capitalise))
                     Text("Each word").tag(UppercaseStyle?.some(.capitaliseWords))
                     Text("All capitals").tag(UppercaseStyle?.some(.uppercase))
                 }
                 .help("Used with Match the case I type. Choose how a capitalised trigger changes the text.")
-                Toggle("Enabled", isOn: binding(\.isEnabled))
+                Toggle("Enabled", isOn: binding(\.isEnabled, .changeEnabled))
                     .help("Off keeps the snippet but stops it expanding.")
             }
 
@@ -116,7 +118,10 @@ struct SnippetEditorView: View {
         .disabled(!model.canEditSnippets)
         .onAppear { load() }
         .onChange(of: snippetID) { _, _ in commit(); load() }
-        .onDisappear { commit() }
+        .onDisappear {
+            commit()
+            undo.end()
+        }
     }
 
     // MARK: Trigger / regex
@@ -171,7 +176,7 @@ struct SnippetEditorView: View {
             .textFieldStyle(.roundedBorder)
             .font(.system(.body, design: .monospaced))
             .focused($regexFocused)
-            .onChange(of: regexFocused) { was, now in if was, !now { commit() } }
+            .onChange(of: regexFocused) { was, now in if was, !now { commit(.changeRegex) } }
             if let regexError {
                 Label(regexError, systemImage: "exclamationmark.triangle.fill")
                     .font(.caption)
@@ -216,7 +221,7 @@ struct SnippetEditorView: View {
             draft.regexTrigger = nil
             draft.triggers = setAsideTriggers
         }
-        commit()
+        commit(.changeTriggerType)
     }
 
     private func addTrigger() {
@@ -238,22 +243,23 @@ struct SnippetEditorView: View {
         draft.triggers.append(trimmed)
         newTrigger = ""
         triggerError = nil
-        commit()
+        commit(.addTrigger)
     }
 
     private func removeTrigger(_ trigger: String) {
         draft.triggers.removeAll { $0 == trigger }
-        commit()
+        commit(.removeTrigger)
     }
 
     // MARK: Draft lifecycle
 
-    private func binding<Value>(_ keyPath: WritableKeyPath<Snippet, Value>) -> Binding<Value> {
+    private func binding<Value>(_ keyPath: WritableKeyPath<Snippet, Value>,
+                                _ edit: SnippetEdit) -> Binding<Value> {
         Binding(
             get: { draft[keyPath: keyPath] },
             set: { newValue in
                 draft[keyPath: keyPath] = newValue
-                commit()
+                commit(edit)
             }
         )
     }
@@ -264,12 +270,15 @@ struct SnippetEditorView: View {
         triggerError = nil
         setAsideTriggers = []
         setAsideRegex = nil
+        undo.begin(editing: $draft, baseline: draft, model: model, undoManager: undoManager)
         if model.consumePendingTriggerFocus(for: snippetID) {
             DispatchQueue.main.async { newTriggerFocused = true }
         }
     }
 
-    private func commit() {
+    /// Persists the draft, recording `edit` as an undo step first when one is given.
+    private func commit(_ edit: SnippetEdit? = nil) {
+        if let edit, model.canEditSnippets { undo.record(edit, current: draft) }
         // `original == nil` means the snippet was deleted from under this pane (elsewhere, or by
         // this same delete) — nothing to persist the draft over, so this must return rather than
         // fall through to `updateSnippet`, which would search every group, find nothing, and still

@@ -36,15 +36,19 @@ final class ContentEditorController {
 ///
 /// - **Wholesale**, from `updateNSView`, when the model string, the vocabulary, the font or the mode
 ///   changed from outside the text view — and on an appearance change, which invalidates every chip
-///   image. This clears the undo stack, deliberately: the recorded edits describe text that has just
-///   been replaced from elsewhere.
+///   image.
 /// - **Surgically**, from `textDidChange`, when typing or pasting has completed a token. Chips are one
 ///   U+FFFC character each, so anything the token pattern still matches in the *displayed* string is
 ///   literal text that has just become a token, and only those ranges are replaced. That keeps typing
-///   free of full rebuilds and keeps undo coherent.
+///   free of full rebuilds.
 ///
-/// Tokenising is skipped while an undo or redo is running, so ⌘Z past a chip leaves the token as text
-/// rather than being immediately undone by this class.
+/// ## Undo
+///
+/// The text view records no undo of its own (`allowsUndo` is off): its history would be in display
+/// ranges, which every wholesale rebuild invalidates. Each user edit is reported through `onTextEdit`
+/// as a new model string instead, and the owning editor keeps the history on the window's undo
+/// manager (`SnippetUndoController`). Undoing changes the binding, which comes back here as an
+/// ordinary rebuild.
 struct ContentEditorView: NSViewRepresentable {
     @Binding var text: String
     let vocabulary: ChipVocabulary
@@ -53,6 +57,11 @@ struct ContentEditorView: NSViewRepresentable {
     let controller: ContentEditorController
     /// A chip was clicked: its variable's name, and where it sits in this view.
     let onChipClicked: (String, CGRect) -> Void
+    /// The user changed the text: the new model string, and whether the edit carries straight on from
+    /// the previous one (more typing at the same caret, or more deleting), so a run of typing can be
+    /// one undo step. Not called for tokens put in through `ContentEditorController`, which the caller
+    /// records itself.
+    let onTextEdit: (String, Bool) -> Void
     /// Editing finished — the moment the owning editor persists its draft.
     let onEndEditing: () -> Void
 
@@ -129,7 +138,7 @@ struct ContentEditorView: NSViewRepresentable {
 
         let textView = ChipTextView(frame: .zero, textContainer: container)
         textView.delegate = coordinator
-        textView.allowsUndo = true
+        textView.allowsUndo = false
         textView.importsGraphics = false
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
@@ -169,6 +178,10 @@ struct ContentEditorView: NSViewRepresentable {
         /// by `flushDeferredRebuild()` the moment the composition commits.
         private var hasDeferredRebuild = false
 
+        private var isInsertingToken = false
+
+        private var typingRun = TypingRun()
+
         init(parent: ContentEditorView) {
             self.parent = parent
         }
@@ -189,22 +202,21 @@ struct ContentEditorView: NSViewRepresentable {
             guard let textView, let storage = textView.textStorage else { return }
             textView.isEditable = isEnabled
             let displayed = TokenSerialiser.rawString(from: storage)
-            let needsRebuild = displayed != text || self.vocabulary != vocabulary
-                || self.isRawMode != isRawMode || self.font != font
+            let presentationChanged = self.vocabulary != vocabulary || self.isRawMode != isRawMode
+                || self.font != font
             self.vocabulary = vocabulary
             self.isRawMode = isRawMode
             self.font = font
-            guard needsRebuild else { return }
-            rebuild(with: text)
+            guard displayed != text || presentationChanged else { return }
+            // Only the words changed (an undo or redo, in practice), so the caret goes where they
+            // changed, as it would after ⌘Z in any text view.
+            let caret = presentationChanged
+                ? nil : TokenSerialiser.endOfChange(from: displayed, to: text)
+            rebuild(with: text, rawCaret: caret)
         }
 
-        /// Replaces the whole text storage with `raw` rendered for the current mode, keeping the caret
-        /// where it was in the *model* string.
-        ///
-        /// The undo stack goes with it. Everything that lands here is a change made outside the text
-        /// view — a rename, a mode switch, a different snippet, a new appearance — and an undo record
-        /// describing the text that was just replaced would restore it into a document it no longer
-        /// belongs to.
+        /// Replaces the whole text storage with `raw` rendered for the current mode, with the caret at
+        /// `rawCaret` in the model string or, by default, where it was.
         ///
         /// **Never while an input method has text marked.** This is the one function that replaces the
         /// storage, so the composition guard lives here rather than being repeated at each caller —
@@ -212,15 +224,16 @@ struct ContentEditorView: NSViewRepresentable {
         /// has not been committed and does not exist in the model yet: replacing the storage would
         /// throw it away while the input context still believed it had a marked range. The rebuild is
         /// remembered instead, and `flushDeferredRebuild()` runs it once the composition commits.
-        private func rebuild(with raw: String) {
+        private func rebuild(with raw: String, rawCaret requestedCaret: Int? = nil) {
             guard let textView, let storage = textView.textStorage else { return }
             guard !textView.hasMarkedText() else {
                 hasDeferredRebuild = true
                 return
             }
             let caret = min(textView.selectedRange().location, storage.length)
-            let rawCaret = TokenSerialiser.rawString(
-                from: storage.attributedSubstring(from: NSRange(location: 0, length: caret)))
+            let rawCaret = requestedCaret ?? (TokenSerialiser.rawString(
+                from: storage.attributedSubstring(from: NSRange(location: 0, length: caret))) as NSString)
+                .length
             let attributed = isRawMode
                 ? NSAttributedString(string: raw, attributes: baseAttributes)
                 : TokenSerialiser.attributedString(for: raw, vocabulary: vocabulary,
@@ -229,12 +242,14 @@ struct ContentEditorView: NSViewRepresentable {
             storage.setAttributedString(attributed)
             isApplyingOwnEdit = false
             textView.typingAttributes = baseAttributes
-            textView.undoManager?.removeAllActions()
+            typingRun.reset()
 
             let chips = isRawMode ? [] : TokenSerialiser.chips(in: raw, vocabulary: vocabulary)
             let target = TokenSerialiser.displayOffset(
-                forRaw: min((rawCaret as NSString).length, (raw as NSString).length), chips: chips)
-            textView.setSelectedRange(NSRange(location: min(target, attributed.length), length: 0))
+                forRaw: min(rawCaret, (raw as NSString).length), chips: chips)
+            let selection = NSRange(location: min(target, attributed.length), length: 0)
+            textView.setSelectedRange(selection)
+            if requestedCaret != nil { textView.scrollRangeToVisible(selection) }
         }
 
         /// Rebuilds after light or dark mode changed, which every chip image was drawn for.
@@ -252,6 +267,15 @@ struct ContentEditorView: NSViewRepresentable {
 
         // MARK: Following the text view
 
+        func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange,
+                      replacementString: String?) -> Bool {
+            if !isApplyingOwnEdit {
+                typingRun.willChange(affectedCharRange,
+                                     replacementLength: (replacementString as NSString?)?.length ?? 0)
+            }
+            return true
+        }
+
         func textDidChange(_ notification: Notification) {
             guard !isApplyingOwnEdit, let textView, let storage = textView.textStorage else { return }
             // Mid-composition the marked text is a guess the input method has not committed yet.
@@ -259,8 +283,12 @@ struct ContentEditorView: NSViewRepresentable {
             // pull the composition out from under the input method.
             guard !textView.hasMarkedText() else { return }
             tokeniseTypedTokens()
+            let continuing = typingRun.didChange(caret: textView.selectedRange().location)
             let raw = TokenSerialiser.rawString(from: storage)
-            if raw != parent.text { parent.text = raw }
+            if raw != parent.text {
+                parent.text = raw
+                if !isInsertingToken { parent.onTextEdit(raw, continuing) }
+            }
             flushDeferredRebuild()
         }
 
@@ -284,15 +312,10 @@ struct ContentEditorView: NSViewRepresentable {
         /// Turns tokens that have just been typed or pasted into chips, in place.
         private func tokeniseTypedTokens() {
             guard !isRawMode, let textView, let storage = textView.textStorage else { return }
-            // An undo that restores a token as text must leave it as text — re-chipping it here would
-            // put the user's ⌘Z straight back where it started, with no way past the chip.
-            let undoManager = textView.undoManager
-            guard !(undoManager?.isUndoing ?? false), !(undoManager?.isRedoing ?? false) else { return }
             let typed = TokenSerialiser.chips(in: storage.string, vocabulary: vocabulary)
             guard !typed.isEmpty else { return }
 
             let caret = textView.selectedRange().location
-            textView.breakUndoCoalescing()
             isApplyingOwnEdit = true
             // Back to front, so each replacement leaves the ranges still to come untouched.
             for token in typed.reversed() {
@@ -325,9 +348,11 @@ struct ContentEditorView: NSViewRepresentable {
             // marked range would leave the two disagreeing about what is where.
             if textView.hasMarkedText() { textView.unmarkText() }
             textView.window?.makeFirstResponder(textView)
-            textView.breakUndoCoalescing()
+            isInsertingToken = true
             textView.insertText(NSAttributedString(string: token, attributes: baseAttributes),
                                 replacementRange: textView.selectedRange())
+            isInsertingToken = false
+            typingRun.reset()
             // `insertText` ends in `didChangeText()`, so by now the token has been chipped and the
             // model string pushed — the chip is the character the caret has just moved past.
             let caret = textView.selectedRange().location
@@ -362,6 +387,46 @@ private final class FlippedHostView: NSView {
     override var isFlipped: Bool { true }
 }
 
+/// Whether each edit continues the one before it: a character typed where the last one left the
+/// caret, or another ⌫ or ⌦ from there. A paste, typing over a selection or an edit after the caret
+/// moved starts a new undo step, as it does in `NSTextView`.
+private struct TypingRun {
+    private enum Kind { case insertion, deletion }
+    /// Captured before the change, because by `textDidChange` the text view no longer says what
+    /// changed.
+    private var pending: (range: NSRange, length: Int)?
+    private var last: (kind: Kind, caret: Int)?
+
+    mutating func willChange(_ range: NSRange, replacementLength: Int) {
+        pending = (range, replacementLength)
+    }
+
+    mutating func didChange(caret: Int) -> Bool {
+        defer { pending = nil }
+        guard let pending else {
+            last = nil
+            return false
+        }
+        let kind: Kind? = switch (pending.range.length, pending.length) {
+        case (0, 1): .insertion
+        case (_, 0): .deletion
+        default: nil
+        }
+        var continuing = false
+        if let kind, let last, last.kind == kind {
+            continuing = kind == .insertion
+                ? pending.range.location == last.caret
+                : NSMaxRange(pending.range) == last.caret || pending.range.location == last.caret
+        }
+        last = kind.map { ($0, caret) }
+        return continuing
+    }
+
+    mutating func reset() {
+        last = nil
+    }
+}
+
 /// The text view itself: chip clicks, and a pasteboard that speaks model strings.
 ///
 /// Copy writes the tokens a chip stands for rather than the U+FFFC it occupies, and paste comes back
@@ -370,15 +435,6 @@ private final class FlippedHostView: NSView {
 final class ChipTextView: NSTextView {
     var onChipClick: ((TokenChipAttachment, Int) -> Void)?
     var onAppearanceChange: (() -> Void)?
-
-    /// Its own undo stack rather than the window's.
-    ///
-    /// A rebuild throws this away — the text it described has been replaced from outside the editor —
-    /// and the window's manager is shared with the trigger and label fields, whose history has done
-    /// nothing to deserve that.
-    private let ownUndoManager = UndoManager()
-
-    override var undoManager: UndoManager? { ownUndoManager }
 
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
