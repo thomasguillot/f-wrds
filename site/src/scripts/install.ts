@@ -10,13 +10,15 @@ const go = (i: number): void => {
   });
 };
 const step: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+const jump: Record<string, number> = { Home: 0, End: 2 };
 tabs.forEach((t, i) => {
   t.onclick = () => go(i);
   t.onkeydown = (e: KeyboardEvent) => {
     const k = step[e.key];
-    if (k) {
+    const j = jump[e.key];
+    if (k || j !== undefined) {
       e.preventDefault();
-      const n = (i + k + 3) % 3;
+      const n = j ?? (i + k + 3) % 3;
       go(n);
       tabs[n].focus();
     }
