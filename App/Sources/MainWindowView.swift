@@ -12,6 +12,7 @@ struct MainWindowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             StoreFailureBanner()
+            EspansoRunningBanner()
             if !model.canEditSnippets {
                 // The banner above can be dismissed; this cannot, so the reason nothing here can be
                 // edited is still legible after it is.
