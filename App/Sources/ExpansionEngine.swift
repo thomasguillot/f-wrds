@@ -85,8 +85,8 @@ final class ExpansionEngine: @unchecked Sendable {
     /// user typed and the buffer that count describes cannot drift apart.
     private static let matcherBufferLength = 64
 
-    private let monitor = KeystrokeMonitor()
-    private let injector = TextInjector()
+    private let monitor: any KeystrokeSource
+    private let injector: any TextInjecting
     private let renderer = ExpansionRenderer()
 
     /// The one context the matcher and everything below it live on. `userInteractive` because the
@@ -216,7 +216,14 @@ final class ExpansionEngine: @unchecked Sendable {
         }
     }
 
-    init() {
+    /// - Parameters:
+    ///   - monitor: where keystrokes come from. The app passes nothing and gets the real tap; tests
+    ///     pass a source they drive by hand, which needs no Input Monitoring grant.
+    ///   - injector: where expansions go. The app passes nothing and gets the real injector; tests
+    ///     pass one that records what it was asked to do, which needs no Accessibility grant.
+    init(monitor: any KeystrokeSource = KeystrokeMonitor(), injector: any TextInjecting = TextInjector()) {
+        self.monitor = monitor
+        self.injector = injector
         // Set here rather than in `start()`: the monitor reads these from its own thread with no
         // synchronisation, so assigning one while a tap is live would race it.
         monitor.onKeyInput = { [weak self] input, fromAnotherApp in
@@ -666,6 +673,15 @@ extension ExpansionEngine {
             frontmostBundleID = bundleID
             applyActiveSnippets()
         }
+    }
+
+    /// Blocks until everything handed to `queue` so far has run.
+    ///
+    /// For tests: they drive a fake `KeystrokeSource` and need every keystroke handled before they
+    /// look at what was injected. The app never waits on the queue, and calling this from the queue
+    /// itself would deadlock.
+    func waitUntilIdle() {
+        queue.sync {}
     }
 
     /// Runs on `queue`.
