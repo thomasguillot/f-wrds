@@ -22,10 +22,12 @@ private final class FakeLibrary: SnippetEditingModel {
 private final class EditorHarness {
     let library = FakeLibrary()
     let undoManager = UndoManager()
-    let controller = SnippetUndoController()
+    let controller: SnippetUndoController
     var draft: Snippet
 
-    init(_ snippet: Snippet = Snippet(triggers: [";a"], label: "Old", content: "Hello")) {
+    init(_ snippet: Snippet = Snippet(triggers: [";a"], label: "Old", content: "Hello"),
+         flushingOn flushNames: [Notification.Name] = []) {
+        controller = SnippetUndoController(flushingOn: flushNames)
         undoManager.groupsByEvent = false
         library.stored[snippet.id] = snippet
         draft = snippet
@@ -152,14 +154,60 @@ struct SnippetUndoTests {
         editor.draft.content = "Typed, not saved yet"
         var outside = editor.stored
         outside.isEnabled = false
-        outside.content = "Changed elsewhere"
+        outside.wordBoundary = true
         editor.library.stored[outside.id] = outside
 
         editor.controller.storedSnippetChanged(to: outside)
         #expect(!editor.undoManager.canUndo)
         #expect(editor.draft.isEnabled == false)
+        #expect(editor.draft.wordBoundary == true)
         #expect(editor.draft.label == "New")
         #expect(editor.draft.content == "Typed, not saved yet")
+    }
+
+    @Test("An outside change during the save delay wins over the waiting undo",
+          arguments: [true, false])
+    func outsideChangeBeatsPendingSave(reported: Bool) async {
+        let editor = EditorHarness()
+        editor.controller.saveDelay = .milliseconds(150)
+        editor.edit(.changeOption) { $0.wordBoundary = true }
+        editor.edit(.changeLabel) { $0.label = "New" }
+        editor.undo()
+        editor.undo()
+        // A backup restore lands before the undos are saved.
+        editor.library.stored[editor.draft.id]?.label = "Restored"
+        if reported { editor.controller.storedSnippetChanged(to: editor.stored) }
+
+        try? await Task.sleep(for: .milliseconds(400))
+        #expect(editor.stored.label == "Restored")
+        #expect(editor.draft.label == "Restored")
+        #expect(editor.stored.wordBoundary == false)
+    }
+
+    @Test("Quitting saves an undo still waiting, and content typed but not committed")
+    func flushSavesAtOnce() {
+        let quit = Notification.Name("SnippetUndoTests.quit")
+        let editor = EditorHarness(flushingOn: [quit])
+        editor.controller.saveDelay = .seconds(30)
+        editor.edit(.changeLabel) { $0.label = "New" }
+        editor.undo()
+        editor.draft.content = "Typed, not committed"
+
+        NotificationCenter.default.post(name: quit, object: nil)
+        #expect(editor.stored.label == "Old")
+        #expect(editor.stored.content == "Typed, not committed")
+    }
+
+    @Test("A closed editor saves nothing on quit")
+    func flushIgnoredAfterEnd() {
+        let quit = Notification.Name("SnippetUndoTests.quitAfterEnd")
+        let editor = EditorHarness(flushingOn: [quit])
+        editor.controller.end()
+        editor.draft.content = "Left behind"
+        let savesBefore = editor.library.saveCount
+
+        NotificationCenter.default.post(name: quit, object: nil)
+        #expect(editor.library.saveCount == savesBefore)
     }
 
     @Test("The editor's own save is not mistaken for an outside change")

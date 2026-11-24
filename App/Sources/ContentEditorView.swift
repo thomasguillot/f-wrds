@@ -231,6 +231,7 @@ struct ContentEditorView: NSViewRepresentable {
             guard isNewDocument || displayed != text || presentationChanged else { return }
             let changeEnd = reveals ? TokenSerialiser.endOfChange(from: displayed, to: text) : nil
             rebuild(with: text, rawCaret: isNewDocument ? 0 : changeEnd, reveal: reveals)
+            if isNewDocument { textView.scroll(.zero) }
         }
 
         /// Replaces the whole text storage with `raw` rendered for the current mode, with the caret at

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import WrdsKit
 
@@ -99,6 +100,10 @@ enum SnippetEdit {
 ///
 /// History also ends when another snippet is selected or the editor closes, so ⌘Z can never change
 /// a snippet you can't see.
+///
+/// The draft is also saved straight away when the app quits or its window stops being key: SwiftUI
+/// runs no `onDisappear` on quit, and an undo still waiting on `saveDelay`, or content typed but not
+/// yet committed, would otherwise be lost.
 @MainActor
 final class SnippetUndoController {
     private weak var undoManager: UndoManager?
@@ -118,6 +123,22 @@ final class SnippetUndoController {
     private var lastStored: Snippet?
     private var isTypingRunOpen = false
     private var pendingSave: Task<Void, Never>?
+    private var isEditing = false
+    private var flushObservers: [NSObjectProtocol] = []
+
+    init(flushingOn names: [Notification.Name] = [NSApplication.willTerminateNotification,
+                                                  NSWindow.didResignKeyNotification]) {
+        flushObservers = names.map { name in
+            // No queue, so the save runs before the notification returns: on quit there is no later.
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: nil) { [weak self] _ in
+                MainActor.assumeIsolated { self?.flush() }
+            }
+        }
+    }
+
+    isolated deinit {
+        flushObservers.forEach(NotificationCenter.default.removeObserver)
+    }
 
     func begin(read: @escaping () -> Snippet, write: @escaping (Snippet) -> Void,
                model: any SnippetEditingModel, undoManager: UndoManager?) {
@@ -128,6 +149,7 @@ final class SnippetUndoController {
         lastStored = model.snippet(id: baseline.id)
         self.model = model
         self.undoManager = undoManager
+        isEditing = true
     }
 
     func end() {
@@ -135,6 +157,12 @@ final class SnippetUndoController {
         pendingSave = nil
         undoManager?.removeAllActions(withTarget: self)
         isTypingRunOpen = false
+        isEditing = false
+    }
+
+    private func flush() {
+        guard isEditing else { return }
+        save()
     }
 
     /// SwiftUI can hand the editor its undo manager after it appears, or a different one later.
@@ -190,12 +218,17 @@ final class SnippetUndoController {
     }
 
     /// The stored snippet changed. Anything other than this editor's own save is an outside change.
+    ///
+    /// The outside change wins every field it set, local edits included, so a save still waiting
+    /// can only write fields nobody else has touched since.
     func storedSnippetChanged(to stored: Snippet?) {
         guard let stored, let draft = readDraft?(), stored.id == draft.id, stored != lastStored
         else { return }
         let reference = lastStored ?? stored
         var merged = draft
-        for field in SnippetField.allCases where !field.differs(between: reference, and: merged) {
+        for field in SnippetField.allCases
+        where field.differs(between: reference, and: stored)
+            || !field.differs(between: reference, and: merged) {
             field.copy(from: stored, to: &merged)
             field.copy(from: stored, to: &baseline)
         }
