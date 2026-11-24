@@ -421,6 +421,162 @@ struct TriggerMatcherTests {
 
     // MARK: Buffer editing
 
+    @Test("A seeded character answers the word-boundary test for what is typed next")
+    func seedAnswersWordBoundary() {
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([Self.somewhere])
+
+        matcher.resetBuffer(seededWith: "r")
+        #expect(type("so", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("so", into: matcher)?.snippetID == Self.somewhere.id)
+    }
+
+    @Test("A seeded character stays in the buffer even when it is a whole trigger")
+    func seedNeverMatchesOnItsOwn() throws {
+        let single = Snippet(triggers: ["m"], label: "M", content: "M")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([single, Self.somewhere])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("so", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: "m")
+        let typed = try #require(type("m", into: matcher))
+        #expect(typed.typedText == "m")
+    }
+
+    @Test("A trigger cannot reach back over a seeded character")
+    func triggerCannotReachOverSeed() {
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([Self.sig])
+
+        matcher.resetBuffer(seededWith: ":")
+        #expect(type("sig", into: matcher) == nil)
+    }
+
+    @Test("The longest trigger made only of typed characters wins over one that needs the seed")
+    func shorterTypedTriggerWinsOverSeededOne() throws {
+        let dotSig = Snippet(triggers: [".sig"], content: "dot")
+        let plainSig = Snippet(triggers: ["sig"], content: "plain")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([dotSig, plainSig])
+
+        matcher.resetBuffer(seededWith: ".")
+        let match = try #require(type("sig", into: matcher))
+        #expect(match == TriggerMatch(snippetID: plainSig.id, typedText: "sig"))
+    }
+
+    @Test("A regex trigger after a seed matches only the typed characters")
+    func regexAfterSeedMatchesTypedOnly() throws {
+        let word = Snippet(regexTrigger: "(?<word>[^;]+);;", content: "{{word}}")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([word])
+
+        // The thumbs-up seed and the typed skin-tone modifier join into one grapheme in the buffer.
+        let cases: [(seed: Character, typed: String, word: String)] = [
+            ("m", "ab;;", "ab"),
+            ("\u{1F44D}", "\u{1F3FD}ab;;", "\u{1F3FD}ab"),
+        ]
+        for (seed, typed, expectedWord) in cases {
+            matcher.resetBuffer(seededWith: seed)
+            let match = try #require(type(typed, into: matcher))
+            #expect(match.typedText == typed)
+            #expect(match.regexCaptures == ["word": expectedWord])
+        }
+    }
+
+    @Test("A regex word boundary sees the seed")
+    func regexWordBoundarySeesSeed() {
+        let word = Snippet(regexTrigger: #"\bbtw"#, content: "by the way")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([word])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("btw", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("btw", into: matcher) == TriggerMatch(snippetID: word.id, typedText: "btw"))
+    }
+
+    @Test("A regex lookbehind sees the seed")
+    func regexLookbehindSeesSeed() throws {
+        let notAfterLetter = Snippet(regexTrigger: #"(?<![a-z])btw"#, content: "by the way")
+        let afterFullStop = Snippet(regexTrigger: #"(?<=\.)sig"#, content: "signature")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([notAfterLetter, afterFullStop])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("btw", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: ".")
+        let match = try #require(type("sig", into: matcher))
+        #expect(match == TriggerMatch(snippetID: afterFullStop.id, typedText: "sig"))
+    }
+
+    @Test("A regex start anchor does not match straight after a seed")
+    func regexStartAnchorAfterSeed() {
+        let anchored = Snippet(regexTrigger: "^foo", content: "bar")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([anchored])
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("foo", into: matcher) == nil)
+
+        matcher.resetBuffer()
+        #expect(type("foo", into: matcher)?.snippetID == anchored.id)
+    }
+
+    @Test("A word-boundary regex trigger reads the seed as what precedes it")
+    func wordBoundaryRegexReadsSeed() {
+        let word = Snippet(regexTrigger: "[a-z]+;;", content: "x", wordBoundary: true)
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([word])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("ab;;", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("ab;;", into: matcher)?.snippetID == word.id)
+    }
+
+    @Test("A propagating trigger after a seed reads its casing from the typed characters")
+    func casePropagationAfterSeed() throws {
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([Self.propagatingSig])
+
+        matcher.resetBuffer(seededWith: "A")
+        let match = try #require(type(":SIG", into: matcher))
+        #expect(match.typedText == ":SIG")
+        #expect(match.caseTransform == .uppercased)
+    }
+
+    @Test("A seed stops counting once it rolls off the front of the buffer")
+    func seedRollsOff() {
+        let exactFit = Snippet(triggers: ["1234"], content: "fits")
+        let matcher = TriggerMatcher(maxBufferLength: 4)
+        matcher.setSnippets([exactFit])
+
+        matcher.resetBuffer(seededWith: "x")
+        #expect(type("1234", into: matcher) == TriggerMatch(snippetID: exactFit.id, typedText: "1234"))
+    }
+
+    @Test("Backspacing over the seed leaves an empty buffer; backspacing typing keeps the seed")
+    func backspaceAndSeed() {
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([Self.somewhere])
+
+        matcher.resetBuffer(seededWith: "r")
+        type("x", into: matcher)
+        _ = matcher.process(.backspace)
+        #expect(type("so", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: "r")
+        _ = matcher.process(.backspace)
+        #expect(type("so", into: matcher)?.snippetID == Self.somewhere.id)
+    }
+
     @Test("Backspace un-does a keystroke, so the partial trigger no longer completes")
     func backspaceUndoesProgress() {
         let matcher = TriggerMatcher()

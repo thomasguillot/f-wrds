@@ -135,8 +135,15 @@ public final class TriggerMatcher {
     private let maxBufferLength: Int
 
     /// The characters typed since the last reset or match, oldest first, capped at
-    /// `maxBufferLength`.
+    /// `maxBufferLength`, possibly behind a seed at index 0 (see `hasSeed`).
     private var buffer: [Character] = []
+
+    /// Whether `buffer[0]` is a seed from `resetBuffer(seededWith:)` rather than typing.
+    ///
+    /// A seed is context only. The caller deletes `typedText.count` characters, so a match that
+    /// included a character the user never typed would delete one character too many; the seed
+    /// therefore only answers the word-boundary test for what follows it.
+    private var hasSeed = false
 
     private var root = Node()
 
@@ -212,11 +219,13 @@ public final class TriggerMatcher {
             return nil
         case .backspace:
             if !buffer.isEmpty { buffer.removeLast() }
+            if buffer.isEmpty { hasSeed = false }
             return nil
         case .character(let character):
             buffer.append(character)
             if buffer.count > maxBufferLength {
                 buffer.removeFirst(buffer.count - maxBufferLength)
+                hasSeed = false
             }
             guard let match = longestEligibleMatch() ?? regexMatch() else { return nil }
             resetBuffer()
@@ -227,6 +236,20 @@ public final class TriggerMatcher {
     /// Drops the typing history, so nothing typed so far can combine with what is typed next.
     public func resetBuffer() {
         buffer.removeAll(keepingCapacity: true)
+        hasSeed = false
+    }
+
+    /// Drops the typing history and records `character` as what sits left of the caret.
+    ///
+    /// For a caller that knows that character but did not just type it. It answers the
+    /// word-boundary test for whatever is typed next and is never part of a match: no trigger can
+    /// complete on it or reach back over it, so `TriggerMatch.typedText` stays exactly what was
+    /// typed. A backspace that deletes it, or typing that rolls it off the front of the buffer,
+    /// leaves the buffer as if it had never been seeded.
+    public func resetBuffer(seededWith character: Character) {
+        resetBuffer()
+        buffer.append(character)
+        hasSeed = true
     }
 
     /// Walks the trie backwards from the end of the buffer, keeping the longest trigger that is
@@ -240,7 +263,8 @@ public final class TriggerMatcher {
         var node = root
         var best: TriggerMatch?
         var index = buffer.count
-        while index > 0 {
+        let firstTyped = hasSeed ? 1 : 0
+        while index > firstTyped {
             index -= 1
             guard let child = node.children[Self.foldedKey(for: buffer[index])] else { break }
             node = child
@@ -269,14 +293,23 @@ public final class TriggerMatcher {
     /// typing against, so there is nothing to propagate.
     private func regexMatch() -> TriggerMatch? {
         guard !regexEntries.isEmpty else { return nil }
+        // The whole buffer is the input, so `\b`, lookbehind and `^` see the seed exactly as they
+        // would any other character left of the caret, but the search starts at the first typed
+        // character, so no match can include the seed. Transparent bounds let the pattern look back
+        // past that start; non-anchoring bounds keep `^` from matching there. Everything is read
+        // back in UTF-16 offsets: a seed and the first typed character can join into one grapheme
+        // in `text`, and a `String` range would have to cut through it.
         let text = String(buffer)
-        let searchRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        let utf16 = text as NSString
+        let typedStart = hasSeed ? String(buffer[0]).utf16.count : 0
+        let searchRange = NSRange(location: typedStart, length: utf16.length - typedStart)
         for entry in regexEntries {
             // A pattern that can match nothing — `\d*` — matches the empty string at the end of
             // every buffer. Firing on that would mean expanding on every keystroke with nothing to
             // delete, and, since a match empties the buffer, no other trigger could ever complete.
-            guard let result = entry.regex.firstMatch(in: text, options: [], range: searchRange),
-                  let matchedRange = Range(result.range, in: text), !matchedRange.isEmpty
+            guard let result = entry.regex.firstMatch(
+                in: text, options: [.withTransparentBounds, .withoutAnchoringBounds], range: searchRange),
+                result.range.length > 0
             else { continue }
             // `wordBoundary` reads the same on a regex as on a plain trigger, buffer start included:
             // a pattern can spell its own boundary with `\b`, but the toggle in the editor should
@@ -285,16 +318,19 @@ public final class TriggerMatcher {
             // Judged on the one match the engine returned — the leftmost that ends at the caret. A
             // pattern that could also have matched further along, starting after a delimiter, is
             // still rejected; asking for that is what `\b` in the pattern is for.
-            if entry.requiresWordBoundary, matchedRange.lowerBound != text.startIndex {
-                let preceding = text[text.index(before: matchedRange.lowerBound)]
-                guard Self.wordDelimiters.contains(preceding) else { continue }
+            if entry.requiresWordBoundary {
+                let typedBefore = utf16.substring(
+                    with: NSRange(location: typedStart, length: result.range.location - typedStart))
+                let preceding = typedBefore.last ?? (hasSeed ? buffer.first : nil)
+                if let preceding, !Self.wordDelimiters.contains(preceding) { continue }
             }
             var captures: [String: String] = [:]
             for name in entry.captureNames {
-                guard let range = Range(result.range(withName: name), in: text) else { continue }
-                captures[name] = String(text[range])
+                let range = result.range(withName: name)
+                guard range.location != NSNotFound else { continue }
+                captures[name] = utf16.substring(with: range)
             }
-            return TriggerMatch(snippetID: entry.snippetID, typedText: String(text[matchedRange]),
+            return TriggerMatch(snippetID: entry.snippetID, typedText: utf16.substring(with: result.range),
                                 regexCaptures: captures)
         }
         return nil
