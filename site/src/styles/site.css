@@ -9,7 +9,7 @@ body::after{content:"";position:fixed;inset:0;background:repeating-linear-gradie
 .site-nav{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:0;padding:20px 0}
 .site-nav :focus-visible,.site-footer :focus-visible{outline:3px solid var(--orange-hi);outline-offset:3px}
 .logo{display:flex;gap:10px;align-items:center;font:600 20px/1.3 var(--font-display),var(--font-body),system-ui,sans-serif;word-spacing:.12em;color:var(--text);text-decoration:none}
-.logo img{display:inline;width:var(--nav-h);height:var(--nav-h);max-width:none;border-radius:10px}
+.logo svg{flex:none;width:var(--nav-h);height:var(--nav-h);margin:0 calc(var(--nav-h)*-.135);color:var(--orange)}
 .site-nav-r{display:flex;align-items:center;gap:28px}
 .site-nav-link{font:600 16px/1.3 var(--font-display),var(--font-body),system-ui,sans-serif;color:var(--text);text-decoration:none;border-radius:6px;transition:color .15s}
 .site-nav-link:hover,.site-nav-link[aria-current]{color:var(--orange-hi)}
