@@ -1,0 +1,27 @@
+---
+title: Changelog
+description: What changed in each version of F Wrds.
+---
+
+Download every version from [GitHub Releases](https://github.com/thomasguillot/f-wrds/releases). F Wrds offers updates itself, or you can choose **Check for Updates…** from the menu bar menu.
+
+## 1.0.1
+
+November 24, 2026 · [Release notes](https://github.com/thomasguillot/f-wrds/releases/tag/v1.0.1)
+
+- **No more surprise shortcuts after a snippet.** Typing straight after a snippet could briefly act as if ⌘ were held, so a space opened Spotlight or Raycast and the text went nowhere. Fixed.
+- **Undo ignores other apps.** Backspace straight after a snippet still gives you the trigger back, but only when you press it. Backspaces sent by another app no longer undo your snippet.
+- **A warning when Espanso is running.** If Espanso is still running, both apps answer the same trigger and the text comes out garbled. F Wrds now says so in its menu and window, with a **Quit Espanso** button.
+
+## 1.0.0
+
+November 23, 2026 · [Release notes](https://github.com/thomasguillot/f-wrds/releases/tag/v1.0.0)
+
+- **Type-to-expand anywhere.** Type a trigger like `;sig` in any app and F Wrds replaces it with your text. Press Backspace straight after to get the trigger back.
+- **A real app to manage your snippets.** Groups, a searchable list and an editor with a live preview, instead of hand-edited config files.
+- **Variables that fill themselves in.** Dates, your clipboard, a random choice, shell output, questions it asks before expanding, and global variables you define once and reuse anywhere.
+- **Regex triggers and case matching.** Match a pattern instead of fixed text, and type a trigger in capitals to get the text in capitals.
+- **Snippet search.** Press ⌥Space, find a snippet, press Return and it pastes, no trigger needed.
+- **Control where it works.** Limit a group to some apps or keep it out of others, pause everywhere or just in the app in front, and switch to simulated typing for apps that won't take a paste.
+- **Bring your Espanso snippets.** Import your Espanso files in one go, or export groups back out. A separate backup file keeps everything else.
+- **Help built in.** Help ▸ F Wrds Help explains every part of the app.
