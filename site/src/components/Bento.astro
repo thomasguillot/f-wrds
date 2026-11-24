@@ -6,36 +6,36 @@ import Install from './Install.astro';
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"></path></symbol></svg>
 <section class="intro"><h2>Small app. <span>Long list.</span></h2><p>Some of these tiles work. Poke them.</p></section>
 <div class="bento">
-  <section class="tile s7 t-var" aria-labelledby="b1"><h3 id="b1">Variables that type themselves</h3><p>Drop in the date, your clipboard, a choice list or a shell command. See the result before you use it.</p>
+  <article class="tile s7 t-var" aria-labelledby="b1"><h3 id="b1">Variables that type themselves</h3><p>Drop in the date, your clipboard, a choice list or a shell command. See the result before you use it.</p>
     <div class="vchips" aria-label="Variable types"><span class="vc">date</span><span class="vc">clipboard</span><span class="vc">choice</span><span class="vc">echo</span><span class="vc">shell</span><span class="vc">form</span><span class="vc">global</span></div>
-    <div class="live" aria-live="off"><small>{'{{date}}'} on this page, right now</small><span id="clk"></span></div></section>
+    <div class="live" aria-live="off"><small>{'{{date}}'} on this page, right now</small><span id="clk"></span></div></article>
 
-  <section class="tile s5 t-case" aria-labelledby="b2"><h3 id="b2">Match your caps.</h3><p>Type the trigger in capitals and the text comes out in capitals.</p>
+  <article class="tile s5 t-case" aria-labelledby="b2"><h3 id="b2">Match your caps.</h3><p>Type the trigger in capitals and the text comes out in capitals.</p>
     <label class="sr" for="cs">Type ;omw in any case</label><input class="field" id="cs" placeholder="type ;omw, ;Omw or ;OMW" autocomplete="off" spellcheck="false" />
-    <div class="row"><button class="chip" type="button" data-c=";omw">;omw</button><button class="chip" type="button" data-c=";Omw">;Omw</button><button class="chip" type="button" data-c=";OMW">;OMW</button></div><span class="rd" id="csst" aria-live="polite">try it_</span></section>
+    <div class="row"><button class="chip" type="button" data-c=";omw">;omw</button><button class="chip" type="button" data-c=";Omw">;Omw</button><button class="chip" type="button" data-c=";OMW">;OMW</button></div><span class="rd" id="csst" aria-live="polite">try it_</span></article>
 
-  <section class="tile s4 hot t-pause" aria-labelledby="b3"><h3 id="b3">Pause when you need to</h3><p>Turn expansion off everywhere, or just for the app in front.</p>
-    <div class="mbar" id="mb"><Glyph /><span id="mbt" aria-live="polite">Expanding in Mail</span><button class="sw" id="mbs" role="switch" aria-checked="false" aria-label="Pause expansion in Mail"></button></div></section>
+  <article class="tile s4 hot t-pause" aria-labelledby="b3"><h3 id="b3">Pause when you need to</h3><p>Turn expansion off everywhere, or just for the app in front.</p>
+    <div class="mbar" id="mb"><Glyph /><span id="mbt" aria-live="polite">Expanding in Mail</span><button class="sw" id="mbs" role="switch" aria-checked="false" aria-label="Pause expansion in Mail"></button></div></article>
 
-  <section class="tile s4 t-key" id="tk" aria-labelledby="b4"><h3 id="b4">Forgot the trigger? Search.</h3><p>Press ⌥Space, find the snippet, hit return. It pastes into whatever you're in.</p>
-    <button class="keys" id="kb" type="button" aria-expanded="true" aria-label="Show or hide the picker preview"><span class="cap">⌥</span><span class="cap">Space</span></button>
-    <ul class="mini" aria-label="Picker preview"><li><b>;sig</b>Cheers, Jordan Lee</li><li><b>;omw</b>On my way! Be there in 10…</li><li><b>;fwrds</b>F Wrds. #@!% typing…</li></ul></section>
+  <article class="tile s4 t-key" id="tk" aria-labelledby="b4"><h3 id="b4">Forgot the trigger? Search.</h3><p>Press ⌥Space, find the snippet, hit return. It pastes into whatever you're in.</p>
+    <button class="keys" id="kb" type="button" aria-expanded="true" aria-controls="pk" aria-label="⌥ Space, show or hide the picker preview"><span class="cap">⌥</span><span class="cap">Space</span></button>
+    <ul class="mini" id="pk" aria-label="Picker preview"><li><b>;sig</b>Cheers, Jordan Lee</li><li><b>;omw</b>On my way! Be there in 10…</li><li><b>;fwrds</b>F Wrds. #@!% typing…</li></ul></article>
 
-  <section class="tile s4 t-rx" aria-labelledby="b5"><h3 id="b5">Regex triggers</h3><p>Match a pattern, not a fixed string. Named groups become <code>{'{{name}}'}</code> in the expansion.</p>
-    <div class="rxl"><code>;ord<span class="grp">(?&lt;n&gt;\d{'{3}'})</span></code><br /><code>Order #<span class="grp">{'{{n}}'}</span> shipped</code></div></section>
+  <article class="tile s4 t-rx" aria-labelledby="b5"><h3 id="b5">Regex triggers</h3><p>Match a pattern, not a fixed string. Named groups become <code>{'{{name}}'}</code> in the expansion.</p>
+    <div class="rxl"><code>;ord<span class="grp">(?&lt;n&gt;\d{'{3}'})</span></code><br /><code>Order #<span class="grp">{'{{n}}'}</span> shipped</code></div></article>
 
-  <section class="tile s7 t-grp" aria-labelledby="b6"><h3 id="b6">Groups with app filters</h3><p>Sort snippets into groups. A group can expand only in the apps you pick, or never in them. Apps that resist paste can get simulated typing instead.</p>
+  <article class="tile s7 t-grp" aria-labelledby="b6"><h3 id="b6">Groups with app filters</h3><p>Sort snippets into groups. A group can expand only in the apps you pick, or never in them. Apps that resist paste can get simulated typing instead.</p>
     <fieldset class="seg"><legend>This group expands</legend><label><input type="radio" name="mode" value="only" checked /><span>Only in</span></label><label><input type="radio" name="mode" value="never" /><span>Never in</span></label></fieldset>
-    <div class="apps" id="apps"></div></section>
+    <div class="apps" id="apps"></div></article>
 
-  <section class="tile s5 out t-esp" aria-labelledby="b7"><h3 id="b7">Bring your snippets</h3><p>Coming from Espanso, another text expander? Import its files in one go, and export any group back the same way.</p>
+  <article class="tile s5 out t-esp" aria-labelledby="b7"><h3 id="b7">Bring your snippets</h3><p>Coming from Espanso, another text expander? Import its files in one go, and export any group back the same way.</p>
     <div class="flow"><pre aria-hidden="true">- trigger: ";ty"
-  replace: "Thanks!"</pre><svg aria-hidden="true"><use href="#arr"></use></svg><div class="sn"><b>;ty</b><span>Thanks!</span></div></div></section>
+  replace: "Thanks!"</pre><svg aria-hidden="true"><use href="#arr"></use></svg><div class="sn"><b>;ty</b><span>Thanks!</span></div></div></article>
 
-  <section class="tile s3 t-bk" aria-labelledby="b8"><h3 id="b8">Backup</h3><p>One JSON file. Every group, snippet, global variable and setting.</p><div class="big-n" aria-hidden="true">1 file</div></section>
-  <section class="tile s3 t-up" aria-labelledby="b9"><h3 id="b9">Updates itself</h3><p>Checks GitHub Releases and installs the new version in place.</p><div class="big-n" aria-hidden="true">In place</div></section>
-  <section class="tile s6 t-pin" aria-labelledby="b10"><h3 id="b10">Pinned and recent, in the menu bar</h3><p>Pinned and recent snippets sit in the menu, one click away. No need to open the app.</p>
-    <ul class="mini" aria-label="Menu bar preview"><li class="hd">Pinned</li><li>Cheers, Jordan Lee</li><li class="hd">Recent</li><li>On my way! Be there in 10…</li></ul></section>
+  <article class="tile s3 t-bk" aria-labelledby="b8"><h3 id="b8">Backup</h3><p>One JSON file. Every group, snippet, global variable and setting.</p><div class="big-n" aria-hidden="true">1 file</div></article>
+  <article class="tile s3 t-up" aria-labelledby="b9"><h3 id="b9">Updates itself</h3><p>Checks GitHub Releases and installs the new version in place.</p><div class="big-n" aria-hidden="true">In place</div></article>
+  <article class="tile s6 t-pin" aria-labelledby="b10"><h3 id="b10">Pinned and recent, in the menu bar</h3><p>Pinned and recent snippets sit in the menu, one click away. No need to open the app.</p>
+    <ul class="mini" aria-label="Menu bar preview"><li class="hd">Pinned</li><li>Cheers, Jordan Lee</li><li class="hd">Recent</li><li>On my way! Be there in 10…</li></ul></article>
 
   <Install />
 </div>
