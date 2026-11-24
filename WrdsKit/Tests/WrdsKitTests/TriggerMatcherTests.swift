@@ -470,16 +470,62 @@ struct TriggerMatcherTests {
 
     @Test("A regex trigger after a seed matches only the typed characters")
     func regexAfterSeedMatchesTypedOnly() throws {
-        let word = Snippet(regexTrigger: "(?<word>[a-z]+);;", content: "{{word}}")
+        let word = Snippet(regexTrigger: "(?<word>[^;]+);;", content: "{{word}}")
         let matcher = TriggerMatcher()
         matcher.setSnippets([word])
 
-        for seed: Character in ["m", "\u{1F44D}\u{1F3FD}"] {
+        // The thumbs-up seed and the typed skin-tone modifier join into one grapheme in the buffer.
+        let cases: [(seed: Character, typed: String, word: String)] = [
+            ("m", "ab;;", "ab"),
+            ("\u{1F44D}", "\u{1F3FD}ab;;", "\u{1F3FD}ab"),
+        ]
+        for (seed, typed, expectedWord) in cases {
             matcher.resetBuffer(seededWith: seed)
-            let match = try #require(type("ab;;", into: matcher))
-            #expect(match.typedText == "ab;;")
-            #expect(match.regexCaptures == ["word": "ab"])
+            let match = try #require(type(typed, into: matcher))
+            #expect(match.typedText == typed)
+            #expect(match.regexCaptures == ["word": expectedWord])
         }
+    }
+
+    @Test("A regex word boundary sees the seed")
+    func regexWordBoundarySeesSeed() {
+        let word = Snippet(regexTrigger: #"\bbtw"#, content: "by the way")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([word])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("btw", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("btw", into: matcher) == TriggerMatch(snippetID: word.id, typedText: "btw"))
+    }
+
+    @Test("A regex lookbehind sees the seed")
+    func regexLookbehindSeesSeed() throws {
+        let notAfterLetter = Snippet(regexTrigger: #"(?<![a-z])btw"#, content: "by the way")
+        let afterFullStop = Snippet(regexTrigger: #"(?<=\.)sig"#, content: "signature")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([notAfterLetter, afterFullStop])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("btw", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: ".")
+        let match = try #require(type("sig", into: matcher))
+        #expect(match == TriggerMatch(snippetID: afterFullStop.id, typedText: "sig"))
+    }
+
+    @Test("A regex start anchor does not match straight after a seed")
+    func regexStartAnchorAfterSeed() {
+        let anchored = Snippet(regexTrigger: "^foo", content: "bar")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([anchored])
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("foo", into: matcher) == nil)
+
+        matcher.resetBuffer()
+        #expect(type("foo", into: matcher)?.snippetID == anchored.id)
     }
 
     @Test("A word-boundary regex trigger reads the seed as what precedes it")

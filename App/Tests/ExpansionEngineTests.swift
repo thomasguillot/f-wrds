@@ -423,6 +423,17 @@ struct ExpansionEngineTests {
             #expect(harness.injector.calls == expandedSignature + [.delete(4), .paste("<ab>")])
         }
 
+        @Test("Backspacing typed characters keeps the seed")
+        func backspaceKeepsSeed() {
+            let harness = EngineHarness(snippets: [signature, byTheWay],
+                                        settings: .with { $0.undoOnBackspace = false })
+            harness.type(":sig")
+            harness.type("x")
+            harness.backspace()
+            harness.type("btw")
+            #expect(harness.injector.calls == expandedSignature)
+        }
+
         @Test("A word-boundary trigger does not fire mid-word straight after an expansion")
         func seedKeepsWordBoundaryHonest() {
             let harness = EngineHarness(snippets: [signature, byTheWay])
