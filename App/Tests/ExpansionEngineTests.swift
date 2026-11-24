@@ -6,6 +6,7 @@ private let signature = Snippet(triggers: [":sig"], content: "Best, Tom")
 private let address = Snippet(triggers: [":addr"], content: "1 Main St.")
 private let dotSig = Snippet(triggers: [".sig"], content: "DOT")
 private let cursor = Snippet(triggers: [":cur"], content: "Hello $|$world")
+private let byTheWay = Snippet(triggers: ["btw"], content: "by the way", wordBoundary: true)
 private func form(_ name: String, field: String) -> Variable {
     Variable(name: name, kind: .form(fields: [FormField(name: field, label: field, kind: .text(default: ""))]))
 }
@@ -380,8 +381,35 @@ struct ExpansionEngineTests {
 
         @Test("A word-boundary trigger does not fire mid-word straight after an expansion")
         func seedKeepsWordBoundaryHonest() {
-            let word = Snippet(triggers: ["btw"], content: "by the way", wordBoundary: true)
-            let harness = EngineHarness(snippets: [signature, word])
+            let harness = EngineHarness(snippets: [signature, byTheWay])
+            harness.type(":sig")
+            harness.type("btw")
+            #expect(harness.injector.calls == expandedSignature)
+        }
+
+        @Test("A word-boundary trigger does not fire mid-word after a discarded match")
+        func discardedMatchKeepsWordBoundary() {
+            let harness = EngineHarness(snippets: [address, dotSig, byTheWay])
+            harness.type(":addr")
+            harness.type("sig")
+            harness.type("btw")
+            #expect(harness.injector.calls == [.delete(5), .paste("1 Main St.")])
+        }
+
+        @Test("A trigger reaching back over the character left after a discarded match is discarded")
+        func discardedMatchSeedIsNotTyping() {
+            let reachBack = Snippet(triggers: ["gx"], content: "GX")
+            let harness = EngineHarness(snippets: [address, dotSig, reachBack])
+            harness.type(":addr")
+            harness.type("sig")
+            harness.type("x")
+            #expect(harness.injector.calls == [.delete(5), .paste("1 Main St.")])
+        }
+
+        @Test("A one-character trigger matching the seed does not cost the word boundary")
+        func oneCharacterTriggerOnSeed() {
+            let single = Snippet(triggers: ["m"], content: "M")
+            let harness = EngineHarness(snippets: [signature, single, byTheWay])
             harness.type(":sig")
             harness.type("btw")
             #expect(harness.injector.calls == expandedSignature)
@@ -400,8 +428,7 @@ struct ExpansionEngineTests {
 
         @Test("A word-boundary trigger does not fire mid-word straight after an undo")
         func undoSeedsMatcher() {
-            let word = Snippet(triggers: ["btw"], content: "by the way", wordBoundary: true)
-            let harness = EngineHarness(snippets: [signature, word])
+            let harness = EngineHarness(snippets: [signature, byTheWay])
             harness.type(":sig")
             harness.backspace()
             harness.type("btw")

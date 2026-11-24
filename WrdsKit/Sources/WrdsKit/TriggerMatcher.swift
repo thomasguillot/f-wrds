@@ -229,6 +229,17 @@ public final class TriggerMatcher {
         buffer.removeAll(keepingCapacity: true)
     }
 
+    /// Drops the typing history and leaves `character` as the only thing in the buffer, without
+    /// matching on it.
+    ///
+    /// For a caller that knows what is left of the caret but did not just type it. The character
+    /// answers the word-boundary test for whatever is typed next, and a trigger reaching back over
+    /// it can still complete, but it can never complete a trigger on its own.
+    public func resetBuffer(seededWith character: Character) {
+        resetBuffer()
+        buffer.append(character)
+    }
+
     /// Walks the trie backwards from the end of the buffer, keeping the longest trigger that is
     /// allowed to fire where it sits.
     ///

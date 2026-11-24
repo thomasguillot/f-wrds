@@ -305,8 +305,8 @@ final class ExpansionEngine: @unchecked Sendable {
         // A match empties the matcher's buffer, and with it whatever seed was at the front. That
         // happened inside the call above whether or not the match is used, so the count is cleared
         // here rather than only on the path that expands — and a discarded match below therefore
-        // still costs the buffer, which is the honest outcome: those characters have been matched
-        // once and must not be able to match again.
+        // still costs the buffer, all but the one character it leaves behind as the next seed: the
+        // rest have been matched once and must not be able to match again.
         let typedLength = typedSinceSeed
         typedSinceSeed = 0
         // A trigger longer than the user has typed since the seed has swallowed the seeded character
@@ -317,7 +317,15 @@ final class ExpansionEngine: @unchecked Sendable {
         // The cost is a trigger that does not fire when its opening characters were put on screen by
         // the expansion before it, and that is the right way round: a missed expansion is retyped in
         // a second, where the other outcome quietly removes a character of the user's document.
-        guard match.typedText.count <= typedLength else { return }
+        //
+        // What is left of the caret afterwards is the last character the user typed, so that is the
+        // new seed. An empty buffer would read as a word delimiter and let a `wordBoundary` trigger
+        // fire in the middle of a word. Only that character goes back: the whole run would hand the
+        // matcher text it has already matched once.
+        guard match.typedText.count <= typedLength else {
+            seedMatcher(with: match.typedText.last)
+            return
+        }
         guard let snippet = activeSnippets[match.snippetID] else { return }
         render(snippet, match: match, answers: [:], inApp: frontmostBundleID)
     }
@@ -562,12 +570,14 @@ final class ExpansionEngine: @unchecked Sendable {
     /// buffer, and a trigger that reaches back over it would report a `typedText` one character
     /// longer than the user typed. `handle(_:)` discards those.
     private func seedMatcher(with character: Character?) {
-        matcher.resetBuffer()
         typedSinceSeed = 0
-        guard let character else { return }
-        // A one-character trigger could complete on this seed. It was not typed, so the match is
-        // dropped — and the buffer it emptied is the same empty buffer this started from.
-        _ = matcher.process(.character(character))
+        // Seeded without matching: a one-character trigger completing on the seed would empty the
+        // buffer again and lose the very character the boundary test needs.
+        guard let character else {
+            matcher.resetBuffer()
+            return
+        }
+        matcher.resetBuffer(seededWith: character)
     }
 
     /// The character immediately left of the caret once `expansion` has landed, or `nil` when there

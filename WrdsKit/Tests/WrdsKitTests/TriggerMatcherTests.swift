@@ -421,6 +421,38 @@ struct TriggerMatcherTests {
 
     // MARK: Buffer editing
 
+    @Test("A seeded character answers the word-boundary test for what is typed next")
+    func seedAnswersWordBoundary() {
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([Self.somewhere])
+
+        matcher.resetBuffer(seededWith: "r")
+        #expect(type("so", into: matcher) == nil)
+
+        matcher.resetBuffer(seededWith: " ")
+        #expect(type("so", into: matcher)?.snippetID == Self.somewhere.id)
+    }
+
+    @Test("A seeded character stays in the buffer even when it is a whole trigger")
+    func seedNeverMatchesOnItsOwn() {
+        let single = Snippet(triggers: ["m"], label: "M", content: "M")
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([single, Self.somewhere])
+
+        matcher.resetBuffer(seededWith: "m")
+        #expect(type("so", into: matcher) == nil)
+    }
+
+    @Test("A trigger can reach back over a seeded character")
+    func triggerReachesOverSeed() throws {
+        let matcher = TriggerMatcher()
+        matcher.setSnippets([Self.sig])
+
+        matcher.resetBuffer(seededWith: ":")
+        let match = try #require(type("sig", into: matcher))
+        #expect(match.typedText == ":sig")
+    }
+
     @Test("Backspace un-does a keystroke, so the partial trigger no longer completes")
     func backspaceUndoesProgress() {
         let matcher = TriggerMatcher()
