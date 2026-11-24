@@ -1,6 +1,5 @@
 ---
-import { Image } from 'astro:assets';
-import icon from '../assets/icon.png';
+import Glyph from './Glyph.astro';
 import Install from './Install.astro';
 ---
 
@@ -16,7 +15,7 @@ import Install from './Install.astro';
     <div class="row"><button class="chip" type="button" data-c=";omw">;omw</button><button class="chip" type="button" data-c=";Omw">;Omw</button><button class="chip" type="button" data-c=";OMW">;OMW</button></div><span class="rd" id="csst" aria-live="polite">try it_</span></section>
 
   <section class="tile s4 hot t-pause" aria-labelledby="b3"><h3 id="b3">Pause when you need to</h3><p>Turn expansion off everywhere, or just for the app in front.</p>
-    <div class="mbar" id="mb"><Image src={icon} alt="" width={60} height={60} /><span id="mbt" aria-live="polite">Expanding in Mail</span><button class="sw" id="mbs" role="switch" aria-checked="false" aria-label="Pause expansion in Mail"></button></div></section>
+    <div class="mbar" id="mb"><Glyph /><span id="mbt" aria-live="polite">Expanding in Mail</span><button class="sw" id="mbs" role="switch" aria-checked="false" aria-label="Pause expansion in Mail"></button></div></section>
 
   <section class="tile s4 t-key" id="tk" aria-labelledby="b4"><h3 id="b4">Forgot the trigger? Search.</h3><p>Press ⌥Space, find the snippet, hit return. It pastes into whatever you're in.</p>
     <button class="keys" id="kb" type="button" aria-expanded="true" aria-label="Show or hide the picker preview"><span class="cap">⌥</span><span class="cap">Space</span></button>

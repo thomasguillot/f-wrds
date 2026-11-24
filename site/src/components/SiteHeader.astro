@@ -1,6 +1,5 @@
 ---
-import { Image } from 'astro:assets';
-import icon from '../assets/icon.png';
+import Glyph from './Glyph.astro';
 
 const path = Astro.url.pathname;
 const docsCurrent = path === '/docs/' ? 'page' : path.startsWith('/docs/') ? 'true' : undefined;
@@ -8,7 +7,7 @@ const docsCurrent = path === '/docs/' ? 'page' : path.startsWith('/docs/') ? 'tr
 
 <div class="wrap">
   <nav class="site-nav" aria-label="Main">
-    <a class="logo" href="/"><Image src={icon} alt="" width={84} height={84} /><span class="logo-text">F Wrds</span></a>
+    <a class="logo" href="/"><Glyph /><span class="logo-text">F Wrds</span></a>
     <div class="site-nav-r">
       <button class="site-search-btn" type="button" data-site-search aria-label="Search docs" aria-keyshortcuts="Meta+K Control+K">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
