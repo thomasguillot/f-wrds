@@ -35,9 +35,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <Font cssVariable="--font-display" />
-    <Font cssVariable="--font-body" />
-    <Font cssVariable="--font-mono" />
+    <Font cssVariable="--font-display" preload />
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-mono" preload />
     <script is:inline>document.documentElement.classList.add('js')</script>
   </head>
   <body>
