@@ -135,8 +135,15 @@ public final class TriggerMatcher {
     private let maxBufferLength: Int
 
     /// The characters typed since the last reset or match, oldest first, capped at
-    /// `maxBufferLength`.
+    /// `maxBufferLength`, possibly behind a seed at index 0 (see `hasSeed`).
     private var buffer: [Character] = []
+
+    /// Whether `buffer[0]` is a seed from `resetBuffer(seededWith:)` rather than typing.
+    ///
+    /// A seed is context only. The caller deletes `typedText.count` characters, so a match that
+    /// included a character the user never typed would delete one character too many; the seed
+    /// therefore only answers the word-boundary test for what follows it.
+    private var hasSeed = false
 
     private var root = Node()
 
@@ -212,11 +219,13 @@ public final class TriggerMatcher {
             return nil
         case .backspace:
             if !buffer.isEmpty { buffer.removeLast() }
+            if buffer.isEmpty { hasSeed = false }
             return nil
         case .character(let character):
             buffer.append(character)
             if buffer.count > maxBufferLength {
                 buffer.removeFirst(buffer.count - maxBufferLength)
+                hasSeed = false
             }
             guard let match = longestEligibleMatch() ?? regexMatch() else { return nil }
             resetBuffer()
@@ -227,17 +236,20 @@ public final class TriggerMatcher {
     /// Drops the typing history, so nothing typed so far can combine with what is typed next.
     public func resetBuffer() {
         buffer.removeAll(keepingCapacity: true)
+        hasSeed = false
     }
 
-    /// Drops the typing history and leaves `character` as the only thing in the buffer, without
-    /// matching on it.
+    /// Drops the typing history and records `character` as what sits left of the caret.
     ///
-    /// For a caller that knows what is left of the caret but did not just type it. The character
-    /// answers the word-boundary test for whatever is typed next, and a trigger reaching back over
-    /// it can still complete, but it can never complete a trigger on its own.
+    /// For a caller that knows that character but did not just type it. It answers the
+    /// word-boundary test for whatever is typed next and is never part of a match: no trigger can
+    /// complete on it or reach back over it, so `TriggerMatch.typedText` stays exactly what was
+    /// typed. A backspace that deletes it, or typing that rolls it off the front of the buffer,
+    /// leaves the buffer as if it had never been seeded.
     public func resetBuffer(seededWith character: Character) {
         resetBuffer()
         buffer.append(character)
+        hasSeed = true
     }
 
     /// Walks the trie backwards from the end of the buffer, keeping the longest trigger that is
@@ -251,7 +263,8 @@ public final class TriggerMatcher {
         var node = root
         var best: TriggerMatch?
         var index = buffer.count
-        while index > 0 {
+        let firstTyped = hasSeed ? 1 : 0
+        while index > firstTyped {
             index -= 1
             guard let child = node.children[Self.foldedKey(for: buffer[index])] else { break }
             node = child
@@ -280,7 +293,9 @@ public final class TriggerMatcher {
     /// typing against, so there is nothing to propagate.
     private func regexMatch() -> TriggerMatch? {
         guard !regexEntries.isEmpty else { return nil }
-        let text = String(buffer)
+        // Searched on its own string rather than as a range of the whole buffer: joined into one
+        // `String`, a seed and the typing after it could merge into a single grapheme.
+        let text = String(buffer[(hasSeed ? 1 : 0)...])
         let searchRange = NSRange(text.startIndex..<text.endIndex, in: text)
         for entry in regexEntries {
             // A pattern that can match nothing — `\d*` — matches the empty string at the end of
@@ -296,9 +311,11 @@ public final class TriggerMatcher {
             // Judged on the one match the engine returned — the leftmost that ends at the caret. A
             // pattern that could also have matched further along, starting after a delimiter, is
             // still rejected; asking for that is what `\b` in the pattern is for.
-            if entry.requiresWordBoundary, matchedRange.lowerBound != text.startIndex {
-                let preceding = text[text.index(before: matchedRange.lowerBound)]
-                guard Self.wordDelimiters.contains(preceding) else { continue }
+            if entry.requiresWordBoundary {
+                let preceding = matchedRange.lowerBound == text.startIndex
+                    ? (hasSeed ? buffer.first : nil)
+                    : text[text.index(before: matchedRange.lowerBound)]
+                if let preceding, !Self.wordDelimiters.contains(preceding) { continue }
             }
             var captures: [String: String] = [:]
             for name in entry.captureNames {

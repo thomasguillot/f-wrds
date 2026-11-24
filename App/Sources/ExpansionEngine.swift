@@ -81,10 +81,6 @@ final class ExpansionEngine: @unchecked Sendable {
     /// expansion is not what gets clobbered.
     private static let clipboardRestoreDelay: TimeInterval = 0.5
 
-    /// How much typing history the matcher keeps, spelled here as well so that the count of what the
-    /// user typed and the buffer that count describes cannot drift apart.
-    private static let matcherBufferLength = 64
-
     private let monitor: any KeystrokeSource
     private let injector: any TextInjecting
     private let renderer = ExpansionRenderer()
@@ -95,7 +91,7 @@ final class ExpansionEngine: @unchecked Sendable {
 
     // MARK: Confined to `queue`
 
-    private let matcher = TriggerMatcher(maxBufferLength: ExpansionEngine.matcherBufferLength)
+    private let matcher = TriggerMatcher()
     /// The snippets currently matchable, by ID — the same set `matcher` holds, kept as a dictionary
     /// so a match can be turned back into the snippet it came from without a search.
     private var activeSnippets: [UUID: Snippet] = [:]
@@ -106,15 +102,6 @@ final class ExpansionEngine: @unchecked Sendable {
     private var pausedBundleIDs: Set<String> = []
     private var frontmostBundleID: String?
     private var pendingUndo: PendingUndo?
-
-    /// How many characters of the matcher's buffer the **user** typed, as opposed to the one this
-    /// engine seeded it with. See `seedMatcher(with:)` for why a seed exists at all.
-    ///
-    /// The seed is a real character in a real buffer, and `TriggerMatch.typedText` is built from that
-    /// buffer — so a trigger that reaches back far enough would come back claiming a character the
-    /// user never typed, and the deletion that follows would eat the character to the left of their
-    /// trigger. This counter is what makes that recognisable.
-    private var typedSinceSeed = 0
 
     /// The app a form's trigger was typed in, remembered across the round trip to the form panel.
     ///
@@ -300,50 +287,9 @@ final class ExpansionEngine: @unchecked Sendable {
         // that was not wanted, not for a backspace three words later.
         pendingUndo = nil
 
-        countTyped(input)
         guard let match = matcher.process(input) else { return }
-        // A match empties the matcher's buffer, and with it whatever seed was at the front. That
-        // happened inside the call above whether or not the match is used, so the count is cleared
-        // here rather than only on the path that expands — and a discarded match below therefore
-        // still costs the buffer, all but the one character it leaves behind as the next seed: the
-        // rest have been matched once and must not be able to match again.
-        let typedLength = typedSinceSeed
-        typedSinceSeed = 0
-        // A trigger longer than the user has typed since the seed has swallowed the seeded character
-        // — `:addr` expanding to a sentence ending in `.`, then `sig` completing a `.sig` trigger.
-        // Expanding it would delete one character more than the user typed, taking the full stop off
-        // the end of the expansion. It is not a match; it is the seed being read as typing.
-        //
-        // The cost is a trigger that does not fire when its opening characters were put on screen by
-        // the expansion before it, and that is the right way round: a missed expansion is retyped in
-        // a second, where the other outcome quietly removes a character of the user's document.
-        //
-        // What is left of the caret afterwards is the last character the user typed, so that is the
-        // new seed. An empty buffer would read as a word delimiter and let a `wordBoundary` trigger
-        // fire in the middle of a word. Only that character goes back: the whole run would hand the
-        // matcher text it has already matched once.
-        guard match.typedText.count <= typedLength else {
-            seedMatcher(with: match.typedText.last)
-            return
-        }
         guard let snippet = activeSnippets[match.snippetID] else { return }
         render(snippet, match: match, answers: [:], inApp: frontmostBundleID)
-    }
-
-    /// Tracks how much of the matcher's buffer is the user's own typing. Runs on `queue`.
-    private func countTyped(_ input: KeyInput) {
-        switch input {
-        case .character:
-            // Clamped to the buffer's own length: past that the seed has rolled off the front, every
-            // character in the buffer is typed, and a bigger number would describe nothing.
-            typedSinceSeed = min(typedSinceSeed + 1, Self.matcherBufferLength)
-        case .backspace:
-            // At zero the backspace is taking the seeded character off instead — which leaves the
-            // buffer with nothing typed in it either way.
-            typedSinceSeed = max(typedSinceSeed - 1, 0)
-        case .reset:
-            typedSinceSeed = 0
-        }
     }
 
     /// Puts the trigger back where the expansion is. Runs on `queue`.
@@ -368,14 +314,13 @@ final class ExpansionEngine: @unchecked Sendable {
 
     /// Drops everything that was true about the caret's surroundings. Runs on `queue`.
     ///
-    /// All three, and the third is not incidental: an armed undo is a claim about text this app put
+    /// Both, and the second is not incidental: an armed undo is a claim about text this app put
     /// on screen a moment ago and about where the caret still is relative to it. Every caller here
     /// is a moment where that claim stops being safe to hold — the app in front changed, expansion
     /// was switched off, a panel took the keyboard — and a backspace arriving after one of those
     /// would otherwise delete `renderedLength - 1` characters of whatever the user is typing now.
     private func forgetContext() {
         matcher.resetBuffer()
-        typedSinceSeed = 0
         pendingUndo = nil
     }
 
@@ -555,8 +500,7 @@ final class ExpansionEngine: @unchecked Sendable {
         bundleID.flatMap { settings.perAppInjectionOverrides[$0] } ?? settings.defaultInjectionMode
     }
 
-    /// Puts the character the caret now sits after into the matcher, and starts counting the typing
-    /// that follows it. Runs on `queue`.
+    /// Tells the matcher which character the caret now sits after. Runs on `queue`.
     ///
     /// `TriggerMatcher` empties its buffer on a match and counts the start of the buffer as a word
     /// delimiter — it has to, or a trigger would stop firing once the buffer rolled over. Together
@@ -566,18 +510,15 @@ final class ExpansionEngine: @unchecked Sendable {
     /// makes the boundary test tell the truth, and it is the one thing this app knows for certain
     /// about the document it cannot read.
     ///
-    /// The seed is not free, which is what `typedSinceSeed` is for: it is a real character in the
-    /// buffer, and a trigger that reaches back over it would report a `typedText` one character
-    /// longer than the user typed. `handle(_:)` discards those.
+    /// The seed is context only: the matcher never makes it part of a match, so no trigger can
+    /// complete on it or reach back over it, and `TriggerMatch.typedText` stays exactly the
+    /// characters the user typed, which is what the deletion counts.
     private func seedMatcher(with character: Character?) {
-        typedSinceSeed = 0
-        // Seeded without matching: a one-character trigger completing on the seed would empty the
-        // buffer again and lose the very character the boundary test needs.
-        guard let character else {
+        if let character {
+            matcher.resetBuffer(seededWith: character)
+        } else {
             matcher.resetBuffer()
-            return
         }
-        matcher.resetBuffer(seededWith: character)
     }
 
     /// The character immediately left of the caret once `expansion` has landed, or `nil` when there

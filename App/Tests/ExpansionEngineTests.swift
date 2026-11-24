@@ -8,7 +8,8 @@ private let dotSig = Snippet(triggers: [".sig"], content: "DOT")
 private let cursor = Snippet(triggers: [":cur"], content: "Hello $|$world")
 private let byTheWay = Snippet(triggers: ["btw"], content: "by the way", wordBoundary: true)
 private func form(_ name: String, field: String) -> Variable {
-    Variable(name: name, kind: .form(fields: [FormField(name: field, label: field, kind: .text(default: ""))]))
+    let field = FormField(name: field, label: field, kind: .text(default: ""))
+    return Variable(name: name, kind: .form(fields: [field]))
 }
 
 private let greeting = Snippet(triggers: [":hi"], content: "Hi {{who.name}}",
@@ -360,8 +361,8 @@ struct ExpansionEngineTests {
 
     @Suite("Seed")
     struct Seed {
-        @Test("A trigger reaching back over the seeded character is discarded")
-        func triggerOverSeedDiscarded() {
+        @Test("A trigger cannot reach back over the seeded character")
+        func triggerOverSeedDoesNotMatch() {
             let harness = EngineHarness(snippets: [address, dotSig])
             harness.type(":addr")
             harness.type("sig")
@@ -379,6 +380,49 @@ struct ExpansionEngineTests {
             ])
         }
 
+        @Test("A shorter typed trigger fires where a longer one would need the seed")
+        func shorterTypedTriggerBeatsSeededOne() {
+            let plainSig = Snippet(triggers: ["sig"], content: "SIG")
+            let harness = EngineHarness(snippets: [address, dotSig, plainSig])
+            harness.type(":addr")
+            harness.type("sig")
+            #expect(harness.injector.calls == [
+                .delete(5), .paste("1 Main St."),
+                .delete(3), .paste("SIG"),
+            ])
+        }
+
+        @Test("A one-character trigger fires where a two-character one would need the seed")
+        func singleCharacterBeatsSeededPair() {
+            let tag = Snippet(triggers: [":tag"], content: "big")
+            let single = Snippet(triggers: ["x"], content: "X")
+            let pair = Snippet(triggers: ["gx"], content: "GX")
+            let harness = EngineHarness(snippets: [tag, single, pair])
+            harness.type(":tag")
+            harness.type("x")
+            #expect(harness.injector.calls == [.delete(4), .paste("big"), .delete(1), .paste("X")])
+        }
+
+        @Test("Typing next to the seed stays matchable after a trigger that needed the seed")
+        func typingAfterUnmatchedSeedTriggerStaysMatchable() {
+            let single = Snippet(triggers: ["x"], content: "X")
+            let pair = Snippet(triggers: ["gx"], content: "GX")
+            let harness = EngineHarness(snippets: [address, dotSig, single, pair])
+            harness.type(":addr")
+            harness.type("sig")
+            harness.type("x")
+            #expect(harness.injector.calls == [.delete(5), .paste("1 Main St."), .delete(2), .paste("GX")])
+        }
+
+        @Test("A regex trigger after an expansion matches only what was typed")
+        func regexAfterSeedMatchesTypedOnly() {
+            let regex = Snippet(regexTrigger: "(?<word>[a-z]+);;", content: "<{{word}}>")
+            let harness = EngineHarness(snippets: [signature, regex])
+            harness.type(":sig")
+            harness.type("ab;;")
+            #expect(harness.injector.calls == expandedSignature + [.delete(4), .paste("<ab>")])
+        }
+
         @Test("A word-boundary trigger does not fire mid-word straight after an expansion")
         func seedKeepsWordBoundaryHonest() {
             let harness = EngineHarness(snippets: [signature, byTheWay])
@@ -387,8 +431,8 @@ struct ExpansionEngineTests {
             #expect(harness.injector.calls == expandedSignature)
         }
 
-        @Test("A word-boundary trigger does not fire mid-word after a discarded match")
-        func discardedMatchKeepsWordBoundary() {
+        @Test("A word-boundary trigger does not fire mid-word after a trigger that needed the seed")
+        func unmatchedSeedTriggerKeepsWordBoundary() {
             let harness = EngineHarness(snippets: [address, dotSig, byTheWay])
             harness.type(":addr")
             harness.type("sig")
@@ -396,17 +440,7 @@ struct ExpansionEngineTests {
             #expect(harness.injector.calls == [.delete(5), .paste("1 Main St.")])
         }
 
-        @Test("A trigger reaching back over the character left after a discarded match is discarded")
-        func discardedMatchSeedIsNotTyping() {
-            let reachBack = Snippet(triggers: ["gx"], content: "GX")
-            let harness = EngineHarness(snippets: [address, dotSig, reachBack])
-            harness.type(":addr")
-            harness.type("sig")
-            harness.type("x")
-            #expect(harness.injector.calls == [.delete(5), .paste("1 Main St.")])
-        }
-
-        @Test("A one-character trigger matching the seed does not cost the word boundary")
+        @Test("A one-character trigger matching the seed never fires and does not cost the word boundary")
         func oneCharacterTriggerOnSeed() {
             let single = Snippet(triggers: ["m"], content: "M")
             let harness = EngineHarness(snippets: [signature, single, byTheWay])
