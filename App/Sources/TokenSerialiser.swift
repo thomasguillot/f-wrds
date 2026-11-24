@@ -180,6 +180,21 @@ enum TokenSerialiser {
     /// The UTF-16 offset in `new` just past where it stops matching `old`, found by trimming the
     /// prefix and suffix the two share.
     static func endOfChange(from old: String, to new: String) -> Int {
+        (new as NSString).length - sharedEnds(old, new).suffix
+    }
+
+    /// Where `offset` in `old` lands in `new`: untouched before the changed stretch, shifted by its
+    /// change in length after it, and at its end if it was inside.
+    static func carry(_ offset: Int, from old: String, to new: String) -> Int {
+        let (prefix, suffix) = sharedEnds(old, new)
+        let oldLength = (old as NSString).length
+        let newLength = (new as NSString).length
+        if offset <= prefix { return offset }
+        if offset >= oldLength - suffix { return offset + newLength - oldLength }
+        return newLength - suffix
+    }
+
+    private static func sharedEnds(_ old: String, _ new: String) -> (prefix: Int, suffix: Int) {
         let before = Array(old.utf16)
         let after = Array(new.utf16)
         var prefix = 0
@@ -191,7 +206,7 @@ enum TokenSerialiser {
               before[before.count - 1 - suffix] == after[after.count - 1 - suffix] {
             suffix += 1
         }
-        return after.count - suffix
+        return (prefix, suffix)
     }
 
     // MARK: Renaming

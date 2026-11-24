@@ -118,6 +118,8 @@ struct SnippetEditorView: View {
         .disabled(!model.canEditSnippets)
         .onAppear { load() }
         .onChange(of: snippetID) { _, _ in commit(); load() }
+        .onChange(of: original) { _, stored in undo.storedSnippetChanged(to: stored) }
+        .onChange(of: undoManager) { _, manager in undo.adopt(manager) }
         .onDisappear {
             commit()
             undo.end()
@@ -270,20 +272,15 @@ struct SnippetEditorView: View {
         triggerError = nil
         setAsideTriggers = []
         setAsideRegex = nil
-        undo.begin(editing: $draft, baseline: draft, model: model, undoManager: undoManager)
+        undo.begin(read: { draft }, write: { draft = $0 }, model: model, undoManager: undoManager)
         if model.consumePendingTriggerFocus(for: snippetID) {
             DispatchQueue.main.async { newTriggerFocused = true }
         }
     }
 
-    /// Persists the draft, recording `edit` as an undo step first when one is given.
+    /// Persists the draft's edits, recording `edit` as an undo step first when one is given.
     private func commit(_ edit: SnippetEdit? = nil) {
         if let edit, model.canEditSnippets { undo.record(edit, current: draft) }
-        // `original == nil` means the snippet was deleted from under this pane (elsewhere, or by
-        // this same delete) — nothing to persist the draft over, so this must return rather than
-        // fall through to `updateSnippet`, which would search every group, find nothing, and still
-        // cost a full persist + engine rebuild for no change.
-        guard model.canEditSnippets, let original, original != draft else { return }
-        model.updateSnippet(draft)
+        undo.save()
     }
 }

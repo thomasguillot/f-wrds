@@ -20,6 +20,12 @@ final class ContentEditorController {
     func insert(token: String, vocabulary: ChipVocabulary) -> CGRect? {
         coordinator?.insert(token: token, vocabulary: vocabulary)
     }
+
+    /// The next change to the text comes from undo or redo: put the caret where it lands and scroll
+    /// it into view, as ⌘Z does in any text view.
+    func revealNextChange() {
+        coordinator?.revealsNextChange = true
+    }
 }
 
 /// The snippet content editor: an `NSTextView` in which every `{{token}}` naming one of the snippet's
@@ -51,6 +57,9 @@ final class ContentEditorController {
 /// ordinary rebuild.
 struct ContentEditorView: NSViewRepresentable {
     @Binding var text: String
+    /// Which snippet the text belongs to. A different one starts at the top rather than keeping the
+    /// previous snippet's caret.
+    let documentID: UUID
     let vocabulary: ChipVocabulary
     /// The snippet's variables, for describing chips to VoiceOver.
     let variables: [Variable]
@@ -186,6 +195,8 @@ struct ContentEditorView: NSViewRepresentable {
         private var isInsertingToken = false
 
         private var typingRun = TypingRun()
+        private var documentID: UUID?
+        var revealsNextChange = false
 
         init(parent: ContentEditorView) {
             self.parent = parent
@@ -204,24 +215,26 @@ struct ContentEditorView: NSViewRepresentable {
 
         func apply(text: String, vocabulary: ChipVocabulary, isRawMode: Bool, font: NSFont,
                    isEnabled: Bool) {
+            let documentID = parent.documentID
             guard let textView, let storage = textView.textStorage else { return }
             textView.isEditable = isEnabled
             let displayed = TokenSerialiser.rawString(from: storage)
+            let isNewDocument = self.documentID != documentID
+            let reveals = revealsNextChange && !isNewDocument && displayed != text
             let presentationChanged = self.vocabulary != vocabulary || self.isRawMode != isRawMode
                 || self.font != font
+            self.documentID = documentID
             self.vocabulary = vocabulary
             self.isRawMode = isRawMode
             self.font = font
-            guard displayed != text || presentationChanged else { return }
-            // Only the words changed (an undo or redo, in practice), so the caret goes where they
-            // changed, as it would after ⌘Z in any text view.
-            let caret = presentationChanged
-                ? nil : TokenSerialiser.endOfChange(from: displayed, to: text)
-            rebuild(with: text, rawCaret: caret)
+            revealsNextChange = false
+            guard isNewDocument || displayed != text || presentationChanged else { return }
+            let changeEnd = reveals ? TokenSerialiser.endOfChange(from: displayed, to: text) : nil
+            rebuild(with: text, rawCaret: isNewDocument ? 0 : changeEnd, reveal: reveals)
         }
 
         /// Replaces the whole text storage with `raw` rendered for the current mode, with the caret at
-        /// `rawCaret` in the model string or, by default, where it was.
+        /// `rawCaret` in the model string or, by default, where it was, scrolled to when `reveal`.
         ///
         /// **Never while an input method has text marked.** This is the one function that replaces the
         /// storage, so the composition guard lives here rather than being repeated at each caller —
@@ -229,16 +242,18 @@ struct ContentEditorView: NSViewRepresentable {
         /// has not been committed and does not exist in the model yet: replacing the storage would
         /// throw it away while the input context still believed it had a marked range. The rebuild is
         /// remembered instead, and `flushDeferredRebuild()` runs it once the composition commits.
-        private func rebuild(with raw: String, rawCaret requestedCaret: Int? = nil) {
+        private func rebuild(with raw: String, rawCaret requestedCaret: Int? = nil, reveal: Bool = false) {
             guard let textView, let storage = textView.textStorage else { return }
             guard !textView.hasMarkedText() else {
                 hasDeferredRebuild = true
                 return
             }
             let caret = min(textView.selectedRange().location, storage.length)
-            let rawCaret = requestedCaret ?? (TokenSerialiser.rawString(
-                from: storage.attributedSubstring(from: NSRange(location: 0, length: caret))) as NSString)
-                .length
+            let rawCaret = requestedCaret ?? TokenSerialiser.carry(
+                (TokenSerialiser.rawString(
+                    from: storage.attributedSubstring(from: NSRange(location: 0, length: caret))) as NSString)
+                    .length,
+                from: TokenSerialiser.rawString(from: storage), to: raw)
             let attributed = isRawMode
                 ? NSAttributedString(string: raw, attributes: baseAttributes)
                 : TokenSerialiser.attributedString(for: raw, vocabulary: vocabulary,
@@ -254,7 +269,7 @@ struct ContentEditorView: NSViewRepresentable {
                 forRaw: min(rawCaret, (raw as NSString).length), chips: chips)
             let selection = NSRange(location: min(target, attributed.length), length: 0)
             textView.setSelectedRange(selection)
-            if requestedCaret != nil { textView.scrollRangeToVisible(selection) }
+            if reveal { textView.scrollRangeToVisible(selection) }
         }
 
         /// Rebuilds after light or dark mode changed, which every chip image was drawn for.

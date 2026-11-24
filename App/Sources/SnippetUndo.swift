@@ -6,7 +6,7 @@ import WrdsKit
 ///
 /// A step restores only the fields its edit touched, so undoing one change never reverts another
 /// made in the meantime (a label still being typed, say, while an option is undone).
-enum SnippetField: Sendable {
+enum SnippetField: CaseIterable, Sendable {
     case triggers, label, content, variables, wordBoundary, propagateCase, uppercaseStyle, isEnabled
 
     /// Copies this field from `source` into `target`. Triggers and the regex travel together: switching
@@ -72,7 +72,8 @@ enum SnippetEdit {
 }
 
 /// Edit ▸ Undo for the snippet editor, on the window's undo manager, so ⌘Z reaches every edit in
-/// the pane whichever control has focus, and keeps working after focus moves on.
+/// the pane whichever control has focus, and keeps working after focus moves on. Also the one place
+/// the editor's draft is saved, and kept in step with the stored snippet.
 ///
 /// Steps are model values rather than text-view operations, which is what lets content history
 /// survive the chip editor rebuilding its text storage: a record in the text view's own character
@@ -83,30 +84,59 @@ enum SnippetEdit {
 /// drops it when editing ends. The content editor has no field editor, so its typing is recorded
 /// here, in runs.
 ///
-/// History belongs to the snippet on screen: selecting another snippet, or closing the editor,
-/// drops every step, so ⌘Z can never change a snippet you can't see.
+/// Saving writes only the fields the draft has changed onto the snippet as it is stored now, so an
+/// edit made elsewhere (the list's on/off switch, a backup restore) is never overwritten by a draft
+/// that predates it. When such an outside change lands, the draft takes it in for every field not
+/// being edited here, and the history ends: its steps were recorded against a snippet that no longer
+/// exists, and undoing one could quietly revert the outside change.
+///
+/// History also ends when another snippet is selected or the editor closes, so ⌘Z can never change
+/// a snippet you can't see.
 @MainActor
 final class SnippetUndoController {
     private weak var undoManager: UndoManager?
     private weak var model: AppModel?
-    private var draft: Binding<Snippet>?
+    private weak var contentEditor: ContentEditorController?
+    /// The editor's draft, read and written through the editor itself. A `Binding` kept from when
+    /// the editor appeared can hand back a value from before the latest edit when read mid-update.
+    private var readDraft: (() -> Snippet)?
+    private var writeDraft: ((Snippet) -> Void)?
     /// The draft as of the last recorded step: what the next step will restore.
     private var baseline = Snippet()
+    /// The stored snippet as of the last load, save or absorbed outside change. A draft field that
+    /// differs from it is a local edit.
+    private var lastStored: Snippet?
     private var isTypingRunOpen = false
-    private var isCommitScheduled = false
+    private var pendingSave: Task<Void, Never>?
 
-    func begin(editing draft: Binding<Snippet>, baseline: Snippet, model: AppModel,
+    func begin(read: @escaping () -> Snippet, write: @escaping (Snippet) -> Void, model: AppModel,
                undoManager: UndoManager?) {
         end()
-        self.draft = draft
-        self.baseline = baseline
+        readDraft = read
+        writeDraft = write
+        baseline = read()
+        lastStored = model.snippet(id: baseline.id)
         self.model = model
         self.undoManager = undoManager
     }
 
     func end() {
+        pendingSave?.cancel()
+        pendingSave = nil
         undoManager?.removeAllActions(withTarget: self)
         isTypingRunOpen = false
+    }
+
+    /// SwiftUI can hand the editor its undo manager after it appears, or a different one later.
+    func adopt(_ newManager: UndoManager?) {
+        guard newManager !== undoManager else { return }
+        undoManager?.removeAllActions(withTarget: self)
+        undoManager = newManager
+        isTypingRunOpen = false
+    }
+
+    func attach(contentEditor: ContentEditorController) {
+        self.contentEditor = contentEditor
     }
 
     /// Registers `edit` if `current` differs from the last recorded state in the fields it covers.
@@ -134,6 +164,42 @@ final class SnippetUndoController {
         isTypingRunOpen = false
     }
 
+    /// Writes the draft's local edits onto the stored snippet, and nothing else.
+    func save() {
+        pendingSave?.cancel()
+        pendingSave = nil
+        guard let model, model.canEditSnippets, let id = readDraft?().id,
+              let current = model.snippet(id: id) else { return }
+        // An outside change SwiftUI hasn't reported yet is taken in first, or it would become the
+        // reference and the draft's older value would look like a local edit.
+        storedSnippetChanged(to: current)
+        guard let snippet = readDraft?() else { return }
+        var stored = current
+        let reference = lastStored ?? current
+        for field in SnippetField.allCases where field.differs(between: reference, and: snippet) {
+            field.copy(from: snippet, to: &stored)
+        }
+        if stored != current { model.updateSnippet(stored) }
+        lastStored = model.snippet(id: id)
+    }
+
+    /// The stored snippet changed. Anything other than this editor's own save is an outside change.
+    func storedSnippetChanged(to stored: Snippet?) {
+        guard let stored, let draft = readDraft?(), stored.id == draft.id, stored != lastStored
+        else { return }
+        let reference = lastStored ?? stored
+        var merged = draft
+        for field in SnippetField.allCases where !field.differs(between: reference, and: merged) {
+            field.copy(from: stored, to: &merged)
+            field.copy(from: stored, to: &baseline)
+        }
+        merged.unmapped = stored.unmapped
+        lastStored = stored
+        undoManager?.removeAllActions(withTarget: self)
+        isTypingRunOpen = false
+        if merged != draft { writeDraft?(merged) }
+    }
+
     private func register(restoring values: Snippet, fields: [SnippetField], name: String) {
         guard let undoManager, model?.canEditSnippets == true else { return }
         undoManager.registerUndo(withTarget: self) { controller in
@@ -147,8 +213,7 @@ final class SnippetUndoController {
     /// Runs for both undo and redo: whichever it is, registering the current values first is what
     /// gives the undo manager the opposite step.
     private func restore(_ values: Snippet, fields: [SnippetField], name: String) {
-        guard let draft else { return }
-        let current = draft.wrappedValue
+        guard model?.canEditSnippets == true, let current = readDraft?() else { return }
         register(restoring: current, fields: fields, name: name)
         var updated = current
         for field in fields {
@@ -156,25 +221,20 @@ final class SnippetUndoController {
             field.copy(from: values, to: &baseline)
         }
         isTypingRunOpen = false
-        draft.wrappedValue = updated
-        scheduleCommit()
+        if updated.content != current.content { contentEditor?.revealNextChange() }
+        writeDraft?(updated)
+        scheduleSave()
     }
 
-    /// One save per undo, however many steps the undo manager grouped into it: inserting a variable
-    /// is a content step and a variables step, and saving after each would write the store twice.
-    private func scheduleCommit() {
-        guard !isCommitScheduled else { return }
-        isCommitScheduled = true
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            isCommitScheduled = false
-            commit()
+    /// Saved once things settle rather than per undo: holding ⌘Z repeats it many times a second,
+    /// and one undo can be several steps the undo manager grouped together. Closing the editor or
+    /// selecting another snippet saves straight away, so nothing waits on this.
+    private func scheduleSave() {
+        pendingSave?.cancel()
+        pendingSave = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled else { return }
+            self?.save()
         }
-    }
-
-    private func commit() {
-        guard let model, model.canEditSnippets, let snippet = draft?.wrappedValue,
-              let original = model.snippet(id: snippet.id), original != snippet else { return }
-        model.updateSnippet(snippet)
     }
 }

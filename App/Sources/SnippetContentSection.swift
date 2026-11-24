@@ -40,6 +40,12 @@ struct SnippetContentSection: View {
             chipVariableID = nil
             unusedVariableID = nil
         }
+        // An undo can take away the variable a popover is showing.
+        .onChange(of: draft.variables.map(\.id)) { _, ids in
+            if let id = chipVariableID, !ids.contains(id) { chipVariableID = nil }
+            if let id = unusedVariableID, !ids.contains(id) { unusedVariableID = nil }
+        }
+        .onAppear { undo.attach(contentEditor: controller) }
     }
 
     // MARK: Controls
@@ -82,6 +88,7 @@ struct SnippetContentSection: View {
     private var editor: some View {
         ContentEditorView(
             text: $draft.content,
+            documentID: draft.id,
             vocabulary: ChipVocabulary(variables: draft.variables),
             variables: draft.variables,
             isRawMode: isRawMode,
