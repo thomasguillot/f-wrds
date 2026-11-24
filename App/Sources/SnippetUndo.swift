@@ -1,6 +1,13 @@
 import Foundation
-import SwiftUI
 import WrdsKit
+
+/// What the snippet editor's undo needs from the library: `AppModel`, or a stand-in in tests.
+@MainActor
+protocol SnippetEditingModel: AnyObject {
+    var canEditSnippets: Bool { get }
+    func snippet(id: UUID) -> Snippet?
+    func updateSnippet(_ snippet: Snippet)
+}
 
 /// The parts of a snippet one undo step can put back.
 ///
@@ -95,8 +102,11 @@ enum SnippetEdit {
 @MainActor
 final class SnippetUndoController {
     private weak var undoManager: UndoManager?
-    private weak var model: AppModel?
-    private weak var contentEditor: ContentEditorController?
+    private weak var model: (any SnippetEditingModel)?
+    /// Called just before an undo or redo changes the content, so the editor can show where.
+    var onContentRestored: (() -> Void)?
+    /// How long undos must pause before the result is saved.
+    var saveDelay: Duration = .milliseconds(400)
     /// The editor's draft, read and written through the editor itself. A `Binding` kept from when
     /// the editor appeared can hand back a value from before the latest edit when read mid-update.
     private var readDraft: (() -> Snippet)?
@@ -109,8 +119,8 @@ final class SnippetUndoController {
     private var isTypingRunOpen = false
     private var pendingSave: Task<Void, Never>?
 
-    func begin(read: @escaping () -> Snippet, write: @escaping (Snippet) -> Void, model: AppModel,
-               undoManager: UndoManager?) {
+    func begin(read: @escaping () -> Snippet, write: @escaping (Snippet) -> Void,
+               model: any SnippetEditingModel, undoManager: UndoManager?) {
         end()
         readDraft = read
         writeDraft = write
@@ -133,10 +143,6 @@ final class SnippetUndoController {
         undoManager?.removeAllActions(withTarget: self)
         undoManager = newManager
         isTypingRunOpen = false
-    }
-
-    func attach(contentEditor: ContentEditorController) {
-        self.contentEditor = contentEditor
     }
 
     /// Registers `edit` if `current` differs from the last recorded state in the fields it covers.
@@ -221,7 +227,7 @@ final class SnippetUndoController {
             field.copy(from: values, to: &baseline)
         }
         isTypingRunOpen = false
-        if updated.content != current.content { contentEditor?.revealNextChange() }
+        if updated.content != current.content { onContentRestored?() }
         writeDraft?(updated)
         scheduleSave()
     }
@@ -232,9 +238,50 @@ final class SnippetUndoController {
     private func scheduleSave() {
         pendingSave?.cancel()
         pendingSave = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(400))
+            guard let delay = self?.saveDelay else { return }
+            try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
             self?.save()
         }
+    }
+}
+
+/// Whether each edit continues the one before it: a character typed where the last one left the
+/// caret, or another ⌫ or ⌦ from there. A paste, typing over a selection or an edit after the caret
+/// moved starts a new undo step, as it does in `NSTextView`.
+struct TypingRun {
+    private enum Kind { case insertion, deletion }
+    /// Captured before the change, because by `textDidChange` the text view no longer says what
+    /// changed.
+    private var pending: (range: NSRange, length: Int)?
+    private var last: (kind: Kind, caret: Int)?
+
+    mutating func willChange(_ range: NSRange, replacementLength: Int) {
+        pending = (range, replacementLength)
+    }
+
+    mutating func didChange(caret: Int) -> Bool {
+        defer { pending = nil }
+        guard let pending else {
+            last = nil
+            return false
+        }
+        let kind: Kind? = switch (pending.range.length, pending.length) {
+        case (0, 1): .insertion
+        case (_, 0): .deletion
+        default: nil
+        }
+        var continuing = false
+        if let kind, let last, last.kind == kind {
+            continuing = kind == .insertion
+                ? pending.range.location == last.caret
+                : NSMaxRange(pending.range) == last.caret || pending.range.location == last.caret
+        }
+        last = kind.map { ($0, caret) }
+        return continuing
+    }
+
+    mutating func reset() {
+        last = nil
     }
 }

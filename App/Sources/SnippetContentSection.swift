@@ -45,7 +45,7 @@ struct SnippetContentSection: View {
             if let id = chipVariableID, !ids.contains(id) { chipVariableID = nil }
             if let id = unusedVariableID, !ids.contains(id) { unusedVariableID = nil }
         }
-        .onAppear { undo.attach(contentEditor: controller) }
+        .onAppear { undo.onContentRestored = { [controller] in controller.revealNextChange() } }
     }
 
     // MARK: Controls

@@ -56,14 +56,18 @@ targets:
   FWrdsAppTests:
     type: bundle.unit-test
     platform: macOS
-    # Unhosted: the engine and the two types it wraps are compiled straight into the bundle, so the
-    # tests never launch a second copy of the app and never need Accessibility or Input Monitoring.
+    # Unhosted: the app sources under test (the engine and the two types it wraps, the snippet
+    # editor's undo, the token serialiser) are compiled straight into the bundle, so the tests never
+    # launch a second copy of the app and never need Accessibility or Input Monitoring.
     sources:
       - path: Tests
       - path: Sources/ExpansionEngine.swift
       - path: Sources/EngineDependencies.swift
       - path: Sources/KeystrokeMonitor.swift
       - path: Sources/TextInjector.swift
+      - path: Sources/SnippetUndo.swift
+      - path: Sources/TokenSerialiser.swift
+      - path: Sources/TokenChip.swift
     dependencies:
       - package: WrdsKit
     settings:
