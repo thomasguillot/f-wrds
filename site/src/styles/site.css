@@ -18,6 +18,7 @@ body::after{content:"";position:fixed;inset:0;background:repeating-linear-gradie
 @media(max-width:600px){.btn.sm .wide{display:none}}
 .site-footer{box-sizing:border-box;margin:0;border-top:1px solid var(--line);padding:26px 0 44px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font:400 15px var(--font-mono),ui-monospace,monospace;color:var(--mut)}
 .site-footer a{color:var(--orange-hi);text-decoration:underline}
+@media(max-width:499px){.site-footer{min-height:141px}}
 @media(max-width:599px){.wrap{padding:0 12px}}
 @media(hover:hover) and (pointer:fine){.btn:hover{transform:translateY(-2px)}.btn:hover::after,.btn:hover::before{opacity:1}}
 .btn:active,.btn:hover:active{transform:scale(.97);transition:transform 140ms var(--ease-out)}
