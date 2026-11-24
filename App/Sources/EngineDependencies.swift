@@ -20,7 +20,7 @@ extension KeystrokeMonitor: KeystrokeSource {}
 /// How `ExpansionEngine` puts text in front of the caret: `TextInjector` in the app.
 ///
 /// Every method is called from the engine's serial queue, in the order the expansion needs, and must
-/// be safe to call from there — which for `TextInjector` means never from the tap thread. See
+/// be safe to call from there, which for `TextInjector` means never from the tap thread. See
 /// `TextInjector` for what each call does to the frontmost app and to the clipboard.
 protocol TextInjecting: AnyObject, Sendable {
     func deleteCharacters(_ count: Int)

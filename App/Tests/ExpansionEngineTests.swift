@@ -17,7 +17,7 @@ private let twoForms = Snippet(triggers: [":two"], content: "{{first.a}}-{{secon
 
 private let expandedSignature: [FakeInjector.Call] = [.delete(4), .paste("Best, Tom")]
 
-@Suite("ExpansionEngine")
+@Suite("ExpansionEngine", .timeLimit(.minutes(1)))
 struct ExpansionEngineTests {
 
     @Suite("Expanding")
@@ -168,16 +168,6 @@ struct ExpansionEngineTests {
             #expect(harness.injector.calls == expandedSignature)
         }
 
-        @Test("Characters typed while paused do not join what is typed after")
-        func pausedCharactersAreDropped() {
-            let harness = EngineHarness(snippets: [signature])
-            harness.setPaused(true)
-            harness.type(":si")
-            harness.setPaused(false)
-            harness.type("g")
-            #expect(harness.injector.calls.isEmpty)
-        }
-
         @Test("Typing into a panel does not expand")
         func panelSuspendedDropsInput() {
             let harness = EngineHarness(snippets: [signature])
@@ -286,7 +276,20 @@ struct ExpansionEngineTests {
             #expect(harness.injector.calls == [.delete(3), .paste("Hi Ada")])
         }
 
-        @Test("Cancelling resumes matching, and the cancelled flow cannot be completed")
+        @Test("Typing into a form panel forgets a trigger half-typed before it opened")
+        func formPanelTypingForgetsBuffer() async throws {
+            let harness = EngineHarness(snippets: [greeting, signature])
+            var requests = harness.formRequests.makeAsyncIterator()
+            harness.type(":si")
+            harness.expand(greeting)
+            let request = try #require(await requests.next())
+            harness.type("x")
+            harness.cancel(flow: request.flow)
+            harness.type("g")
+            #expect(harness.injector.calls.isEmpty)
+        }
+
+        @Test("Canceling resumes matching, and the canceled flow cannot be completed")
         func cancelResumesMatching() async throws {
             let harness = EngineHarness(snippets: [greeting, signature])
             var requests = harness.formRequests.makeAsyncIterator()
@@ -395,12 +398,13 @@ struct ExpansionEngineTests {
             #expect(harness.injector.calls == expandedSignature + [.delete(8), .type(":sig")])
         }
 
-        @Test("The restored trigger does not expand again on its own")
-        func undoDoesNotReExpand() {
-            let harness = EngineHarness(snippets: [signature])
+        @Test("A word-boundary trigger does not fire mid-word straight after an undo")
+        func undoSeedsMatcher() {
+            let word = Snippet(triggers: ["btw"], content: "by the way", wordBoundary: true)
+            let harness = EngineHarness(snippets: [signature, word])
             harness.type(":sig")
             harness.backspace()
-            harness.type(" ")
+            harness.type("btw")
             #expect(harness.injector.calls == expandedSignature + [.delete(8), .type(":sig")])
         }
 

@@ -675,14 +675,17 @@ extension ExpansionEngine {
         }
     }
 
+    #if DEBUG
     /// Blocks until everything handed to `queue` so far has run.
     ///
     /// For tests: they drive a fake `KeystrokeSource` and need every keystroke handled before they
     /// look at what was injected. The app never waits on the queue, and calling this from the queue
     /// itself would deadlock.
     func waitUntilIdle() {
+        dispatchPrecondition(condition: .notOnQueue(queue))
         queue.sync {}
     }
+    #endif
 
     /// Runs on `queue`.
     private func applyActiveSnippets() {
